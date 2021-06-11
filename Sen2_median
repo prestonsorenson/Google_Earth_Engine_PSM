@@ -1,0 +1,72 @@
+// Sentinel-2
+
+// Filter an image collection by date and region to make a
+// median pixel composite.
+//
+// See also: ClippedComposite, which crops the output image
+// instead of filtering the input collection.
+
+// Filter to only include images within a defined area.
+var polygon = ee.Geometry.Polygon({
+  coords: [[[-114.06, 49.00], [-115.22, 51.53], [-116.23, 53.74], [-115.82, 55.94], [-109.76, 56.03], [-109.81, 49.00]
+  ]],
+  geodesic: false
+});
+
+/**
+ * Function to mask clouds using the Sentinel-2 QA band
+ * @param {ee.Image} image Sentinel-2 image
+ * @return {ee.Image} cloud masked Sentinel-2 image
+ */
+function maskS2clouds(image) {
+  var qa = image.select('QA60');
+
+  // Bits 10 and 11 are clouds and cirrus, respectively.
+  var cloudBitMask = 1 << 10;
+  var cirrusBitMask = 1 << 11;
+
+  // Both flags should be set to zero, indicating clear conditions.
+  var mask = qa.bitwiseAnd(cloudBitMask).eq(0)
+      .and(qa.bitwiseAnd(cirrusBitMask).eq(0));
+
+  return image.updateMask(mask).divide(10000);
+}
+
+
+// Create a Sentinel 2 composite for Spring of 2019, and filter by
+// the bounds of the FeatureCollection.
+var collection = 
+    ee.ImageCollection('COPERNICUS/S2')
+    .filter(ee.Filter.calendarRange(2015,2020,'year'))
+    .filter(ee.Filter.calendarRange(5,10,'month'))
+    .filterBounds(polygon)
+    .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20))
+    .map(maskS2clouds);
+
+// Compute the median in each band, in each pixel.
+var median = collection.median();
+
+//convert to float
+var median = median.float()
+
+// Select the red, green and blue bands.
+var rgbVis = {
+  min: 0.0,
+  max: 0.3,
+  bands: ['B4', 'B3', 'B2'],
+};
+
+Map.setCenter(-112, 52, 5);
+Map.addLayer(median, rgbVis, 'RGB');
+
+
+// Export the image, specifying scale and region.
+Export.image.toDrive({
+image: median, //replace with your image name variable
+description: 'sab_sen2_mosaic',
+scale: 10,
+maxPixels: 1e12,
+region: polygon, //polygon name that you have drawn at step 1
+folder:'sab_sen2_mosaic',
+crs: "EPSG:26912"
+});

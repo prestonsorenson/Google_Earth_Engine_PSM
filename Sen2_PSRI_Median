@@ -1,0 +1,77 @@
+// Sentinel-2
+
+// Filter an image collection by date and region to make a
+// median pixel composite.
+//
+// See also: ClippedComposite, which crops the output image
+// instead of filtering the input collection.
+
+// Filter to only include images within a defined area.
+var polygon = ee.Geometry.Polygon({
+  coords: [[[-114.06, 49.00], [-115.22, 51.53], [-116.23, 53.74], [-115.82, 55.94], [-109.76, 56.03], [-109.81, 49.00]
+  ]],
+  geodesic: false
+});
+
+
+/**
+ * Function to mask clouds using the Sentinel-2 QA band
+ * @param {ee.Image} image Sentinel-2 image
+ * @return {ee.Image} cloud masked Sentinel-2 image
+ */
+function maskS2clouds(image) {
+  var qa = image.select('QA60');
+
+  // Bits 10 and 11 are clouds and cirrus, respectively.
+  var cloudBitMask = 1 << 10;
+  var cirrusBitMask = 1 << 11;
+
+  // Both flags should be set to zero, indicating clear conditions.
+  var mask = qa.bitwiseAnd(cloudBitMask).eq(0)
+      .and(qa.bitwiseAnd(cirrusBitMask).eq(0));
+
+  return image.updateMask(mask).divide(10000);
+}
+
+
+// Create a Sentinel 2 composite for Spring of 2019, and filter by
+// the bounds of the FeatureCollection.
+var collection = 
+    ee.ImageCollection('COPERNICUS/S2')
+    .filter(ee.Filter.calendarRange(2015,2020,'year'))
+    .filter(ee.Filter.calendarRange(5,10,'month'))
+    .filterBounds(polygon)
+    .map(maskS2clouds);
+
+// Function to calculate and add an NDVI band
+var addNDVI = function(image) {
+return image.addBands(image.expression(
+      '(B4 - B2) / B5', {
+        'B4': image.select(['B4']),
+        'B2': image.select(['B2']),
+        'B5': image.select(['B5'])
+      }
+    ).rename('PSRI'));
+}
+var collection = collection.map(addNDVI);
+
+var NDVI = collection.select(['PSRI']);
+var NDVImed = NDVI.median(); //I just changed the name of this variable ;)
+
+// Create palettes for display of NDVI
+var ndvi_pal = ['#d73027', '#f46d43', '#fdae61', '#fee08b', '#d9ef8b',
+'#a6d96a'];
+
+// Display NDVI results on map
+Map.addLayer(NDVImed.clip(polygon), {min:-0.5, max:0.9, palette: ndvi_pal}, 'NDVI');
+
+// Export the image, specifying scale and region.
+Export.image.toDrive({
+image: NDVImed, //replace with your image name variable
+description: 'sab_sen2_PSRI_med_fall',
+scale: 10,
+maxPixels: 1e12,
+region: polygon, //polygon name that you have drawn at step 1
+folder:'sab_sen2_psri_med_fall',
+crs: "EPSG:26912"
+});

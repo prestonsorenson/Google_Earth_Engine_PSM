@@ -1,0 +1,22 @@
+// Filter to only include images within a defined area.
+var polygon = ee.Geometry.Polygon({
+  coords: [[[-114.06, 49.00], [-115.22, 51.53], [-116.23, 53.74], [-115.82, 55.94], [-109.76, 56.03], [-109.81, 49.00]
+  ]],
+  geodesic: false
+});
+
+var dataset = ee.Image('JAXA/ALOS/AW3D30/V2_2').clip(polygon);
+var elevation = dataset.select('AVE_DSM');
+Map.setCenter(-112.00, 50.5, 10);
+Map.addLayer(elevation, {min: 600, max: 700}, 'slope');
+
+// Export the image, specifying scale and region.
+Export.image.toDrive({
+image: elevation, //replace with your image name variable
+description: 'sab_elevation_alos',
+scale: 30,
+maxPixels: 1e9,
+region: polygon, //polygon name that you have drawn at step 1
+folder:'sab_elevation_alos',
+crs: "EPSG:26912"
+});
