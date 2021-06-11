@@ -1,5 +1,6 @@
 // Sentinel-1
-
+//This code is adapated from Hird et al. 2017 Document S1: Source code used in (a) Sentinel-1 and Sentinel-2 data preparation and input variable generation; and (b) boosted regression tree modeling, classification, and accuracy assessment. 
+//NOTE: NDPOL Calculations are not working correctly
 // Filter an image collection by date and region to make a
 // median pixel composite.
 //
