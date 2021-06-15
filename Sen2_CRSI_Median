@@ -70,10 +70,10 @@ Map.addLayer(CRSImed.clip(polygon), {min: 0, max:0.9, palette: CRSI_pal}, 'CRSI'
 // Export the image, specifying scale and region.
 Export.image.toDrive({
 image: CRSImed, //replace with your image name variable
-description: 'sab_sen2_CRSI_med_fall',
+description: 'sab_sen2_CRSI_med',
 scale: 10,
 maxPixels: 1e12,
 region: polygon, //polygon name that you have drawn at step 1
-folder:'sab_sen2_CRSI_med_fall',
+folder:'sab_sen2_CRSI_med',
 crs: "EPSG:26912"
 });
