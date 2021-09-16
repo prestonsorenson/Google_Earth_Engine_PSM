@@ -41,9 +41,7 @@ var collection =
     .filterBounds(polygon)
     .map(cloudMaskL457);
     
-// Function to calculate and add an ARI band
-
-// Function to calculate and add an ARI band
+// Function to calculate and add an SAVI band
 var addSAVI = function(image) {
 return image.addBands(image.expression(
       '((1.5)*(B4 - B3)) / (B4 + B3 + 0.5)', {
