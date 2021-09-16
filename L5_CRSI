@@ -70,7 +70,7 @@ Map.addLayer(CSRImed.clip(polygon), {min:-0.5, max:0.9, palette: CSRI_pal}, 'CSR
 Export.image.toDrive({
 image: CSRImed, //replace with your image name variable
 description: 'sk_l5_CSRI_median_focal10_100m',
-scale: 30,
+scale: 100,
 maxPixels: 1e12,
 region: polygon, //polygon name that you have drawn at step 1
 folder:'sk_l5_CSRI_median_focal10_100m',
