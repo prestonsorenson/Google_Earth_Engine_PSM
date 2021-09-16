@@ -1,4 +1,4 @@
-// Landsat 7
+// Landsat 5
 
 // Filter an image collection by date and region to make a
 // median pixel composite.
@@ -31,7 +31,7 @@ var cloudMaskL457 = function(image) {
   return image.updateMask(cloud.not()).updateMask(mask2);
 };
 
-// Create a Landsat 7 composites filter by
+// Create a Landsat 5 composites filter by
 // the bounds of the FeatureCollection.
 
 var collection = 
@@ -58,7 +58,7 @@ var collection = collection.map(addARI);
 var ARI = collection.select(['ARI']);
 var ARImed = ARI.median();
 
-//apply 3x3 median focal filter
+//apply median focal filter
 var ARImed = ARImed.focal_median(10);
 
 // Create palettes for display of ARI
