@@ -1,0 +1,56 @@
+//ERA5 Daily Aggregates
+// Filter to only include images within a defined area.
+var polygon = ee.Geometry.Polygon({
+  coords: [[[-110.00, 49.00], [-110.00, 55.00], [-101.00, 55.00], [-101.00, 49.00]
+  ]],
+  geodesic: false
+});
+
+
+// Daily mean 2m air temperature
+var era5_2mt = ee.ImageCollection('ECMWF/ERA5/DAILY')
+                   .select('mean_2m_air_temperature')
+                   .filter(ee.Filter.calendarRange(1979,2020,'year'))
+                   .filter(ee.Filter.calendarRange(5,9,'month'))
+                   .filterBounds(polygon)
+                   ;
+                   
+// Daily total precipitation sums
+var era5_tp = ee.ImageCollection('ECMWF/ERA5/DAILY')
+                  .select('total_precipitation')
+                   .filter(ee.Filter.calendarRange(1979,2020,'year'))
+                   .filter(ee.Filter.calendarRange(5,9,'month'))
+                   .filterBounds(polygon)
+                   ;
+
+//calculate median temperature
+var era5_2mt = era5_2mt.median();
+
+//calculate total precipitation
+var era5_tp = era5_tp.sum();
+
+// Export the image, specifying scale and region.
+Export.image.toDrive({
+image: era5_2mt, //replace with your image name variable
+description: 'sk_era5_2mt_median_100m',
+scale: 100,
+maxPixels: 1e12,
+region: polygon, //polygon name that you have drawn at step 1
+folder:'sk_era5_2mt_median_100m',
+crs: "EPSG:26913"
+});
+
+Export.image.toDrive({
+image: era5_tp, //replace with your image name variable
+description: 'sk_era5_tp_median_100m',
+scale: 100,
+maxPixels: 1e12,
+region: polygon, //polygon name that you have drawn at step 1
+folder:'sk_era5_tp_median_100m',
+crs: "EPSG:26913"
+});
+
+
+
+
+                
