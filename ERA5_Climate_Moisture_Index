@@ -1,0 +1,74 @@
+//not finished still figuring out k value calculation step
+
+//ERA5 Daily Aggregates
+// Filter to only include images within a defined area.
+var polygon = ee.Geometry.Polygon({
+  coords: [[[-110.00, 49.00], [-110.00, 55.00], [-101.00, 55.00], [-101.00, 49.00]
+  ]],
+  geodesic: false
+});
+
+
+// Daily Climate Data
+var era5 = ee.ImageCollection('ECMWF/ERA5/DAILY')
+                   .filter(ee.Filter.calendarRange(1979,2020,'year'))
+                   .filterBounds(polygon)
+                   ;
+
+//elevation data
+var elev = ee.Image('JAXA/ALOS/AW3D30/V2_2').clip(polygon);
+var elev = elev.select('AVE_DSM');
+
+
+//Elevation Data
+var era5 = era5.merge(elev);
+
+//calculate k value
+var addK = function(era5) {
+return era5.addBands(
+  era5.expression(
+      '(tmean+5)/(15)',
+      {
+        'tmean': era5.select(['mean_2m_air_temperature']),
+      }
+    ).rename('k'))};
+
+var era5 = era5.map(addK);
+
+//replace k values less than 0
+var era5_k=era5.select['k'];
+var replace_k_low = function (era5_k){
+  return era5_k.where(era5_k.lt(0),0).rename('k_low');
+};
+
+var era5 = era5.map(replace_k_low);
+
+//replace k values greater than 1
+var era5_k=era5.select['k_low'];
+var replace_k_high = function (era5_k){
+  return era5_k.where(era5_k.gt(1),1).rename('k_final');
+};
+
+var era5 = era5.map(replace_k_high);
+
+
+// Function to calculate SMI
+var addSMI = function(era5) {
+return image.addBands(image.expression(
+      'precip - 3.1 * (0.5*(tmax-tmin)-dewpoint) * k **(elev/9300)'
+      {
+        'tmin': era5.select(['minimum_2m_air_temperature']),
+        'tmax': era5.select(['maximum_2m_air_temperature']),
+        'k': era5.select(['k']),
+        'dewpoint': era5.select(['dewpoint_2m_temperature']),
+        'precip':era5.select(['total_precipitation']),
+        'elev': era5.select(['DSM'])        
+      }
+    ).rename('CMI'))};
+
+
+
+
+
+
+
