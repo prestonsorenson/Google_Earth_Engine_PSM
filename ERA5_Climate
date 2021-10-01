@@ -30,8 +30,9 @@ var era5_2mt = era5_2mt.median();
 var era5_tp = era5_tp.sum();
 
 //resample to 100 m pixels
-var era5_2mt = era5_mt.resample('bicubic').reproject(crs="EPSG:26913", scale=100)
-var era5_tp = era5_tp.resample('bicubic').reproject(crs="EPSG:26913", scale=100)
+var era5_2mt = era5_2mt.resample('bicubic').reproject({crs:"EPSG:26913", scale:100});
+var era5_tp = era5_tp.resample('bicubic').reproject({crs:"EPSG:26913", scale:100});
+print(era5_tp);
 
 // Export the image, specifying scale and region.
 Export.image.toDrive({
@@ -53,8 +54,3 @@ region: polygon, //polygon name that you have drawn at step 1
 folder:'sk_era5_tp_median_100m',
 crs: "EPSG:26913"
 });
-
-
-
-
-                
