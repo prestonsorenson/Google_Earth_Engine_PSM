@@ -19,7 +19,7 @@ var era5_2mt = ee.ImageCollection('ECMWF/ERA5/DAILY')
 var era5_tp = ee.ImageCollection('ECMWF/ERA5/DAILY')
                   .select('total_precipitation')
                    .filter(ee.Filter.calendarRange(1979,2020,'year'))
-                   .filter(ee.Filter.calendarRange(5,9,'month'))
+                   .filter(ee.Filter.calendarRange(1,12,'month'))
                    .filterBounds(polygon)
                    ;
 
@@ -28,6 +28,10 @@ var era5_2mt = era5_2mt.median();
 
 //calculate total precipitation
 var era5_tp = era5_tp.sum();
+
+//resample to 100 m pixels
+var era5_2mt = era5_mt.resample('bicubic').reproject(crs="EPSG:26913", scale=100)
+var era5_tp = era5_tp.resample('bicubic').reproject(crs="EPSG:26913", scale=100)
 
 // Export the image, specifying scale and region.
 Export.image.toDrive({
