@@ -1,0 +1,49 @@
+//ERA5 Daily Aggregates
+// Filter to only include images within a defined area.
+var polygon = ee.Geometry.Polygon({
+  coords: [[[-110.00, 49.00], [-110.00, 55.00], [-101.00, 55.00], [-101.00, 49.00]
+  ]],
+  geodesic: false
+});
+
+
+// Daily mean 2m air temperature
+var era5_2mt = ee.ImageCollection('ECMWF/ERA5/DAILY')
+                   .select('maximum_2m_air_temperature')
+                   .filter(ee.Filter.calendarRange(1979,2020,'year'))
+                   .filter(ee.Filter.calendarRange(1,12,'month'))
+                   .filterBounds(polygon)
+                   ;
+
+
+var tempThres = function(image) {
+  // THRESHOLD
+  // if temp greater or equal to 303.15 => 1 else 0
+  var thres = image.select(['maximum_2m_air_temperature']).gte(303.15).rename('temp_thres');
+  return image.addBands(thres);
+};
+
+var mask1 = function (image){
+return image.mask(image.select('temp_thres'));
+};
+
+//threshold by 30 degrees C or 303.15
+var era5_2mt = era5_2mt.map(tempThres);
+
+var era5_2mt = era5_2mt.map(mask1);
+
+var era5_2mt = era5_2mt.count();
+
+//resample to 100 m pixels
+var era5_2mt = era5_2mt.resample('bicubic').reproject({crs:"EPSG:26913", scale:100});
+
+// Export the image, specifying scale and region.
+Export.image.toDrive({
+image: era5_2mt, //replace with your image name variable
+description: 'sk_era5_2mt_high_temp_100m',
+scale: 100,
+maxPixels: 1e12,
+region: polygon, //polygon name that you have drawn at step 1
+folder:'sk_era5_2mt_high_temp_100m',
+crs: "EPSG:26913"
+});
