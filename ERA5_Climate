@@ -28,6 +28,8 @@ var era5_2mt = era5_2mt.median();
 
 //calculate total precipitation
 var era5_tp = era5_tp.sum();
+//convert from sum in meteres over whole period to average per year mm
+var era5_tp = era5_tp.divide(41).multiply(1000);
 
 //resample to 100 m pixels
 var era5_2mt = era5_2mt.resample('bicubic').reproject({crs:"EPSG:26913", scale:100});
