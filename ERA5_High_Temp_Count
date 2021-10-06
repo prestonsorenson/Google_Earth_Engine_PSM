@@ -34,6 +34,8 @@ var era5_2mt = era5_2mt.map(mask1);
 
 var era5_2mt = era5_2mt.count();
 
+var era5_2mt = era5_2mt.divide(41);
+
 //resample to 100 m pixels
 var era5_2mt = era5_2mt.resample('bicubic').reproject({crs:"EPSG:26913", scale:100});
 
