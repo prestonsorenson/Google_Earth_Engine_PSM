@@ -35,7 +35,7 @@ var cloudMaskL457 = function(image) {
 // the bounds of the FeatureCollection.
 
 var collection = 
-    ee.ImageCollection('LANDSAT/LE07/C01/T1_SR')
+    ee.ImageCollection('LANDSAT/LE07/C01/T2_SR')
     .filter(ee.Filter.calendarRange(1999,2021,'year'))
     .filter(ee.Filter.calendarRange(7,7,'month'))
     .filterBounds(polygon)
