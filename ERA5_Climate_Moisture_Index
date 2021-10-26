@@ -26,46 +26,43 @@ var elev = elev.select(['AVE_DSM']);
 var era5 = era5.merge(elev);
 
 //calculate k value
-var addK = function(era5) {
-return era5.addBands(
-  era5.expression(
+var addK = function(image) {
+return image.addBands(
+  image.expression(
       '(tmean+5)/(15)',
       {
-        'tmean': era5.select(['mean_2m_air_temperature']),
+        'tmean': image.select(['mean_2m_air_temperature']),
       }
     ).rename('k'))};
 
 var era5 = era5.map(addK);
 
 //replace k values less than 0
-var era5_k=era5.select(['k']);
-var replace_k_low = function (era5_k){
-  return era5_k.where(era5_k.lt(0),0).rename('k_low');
-};
-
+var replace_k_low = function (image){
+  return image.select(['k']).where(image.select(['k']).lt(0), 0);
+  };
+  
 var era5 = era5.map(replace_k_low);
 
 //replace k values greater than 1
-var era5_k=era5.select(['k_low']);
-var replace_k_high = function (era5_k){
-  return era5_k.where(era5_k.gt(1),1).rename('k_final');
-};
+var replace_k_high = function (image){
+  return image.select(['k']).where(image.select(['k']).gt(1), 1);
+  };
 
 var era5 = era5.map(replace_k_high);
 
-
 // Function to calculate CMI
-var addCMI = function(era5) {
-return era5.addBands(
-  era5.expression(
+var addCMI = function(image) {
+return image.addBands(
+  image.expression(
       '(precip*1000) - 3.1 * (0.5*(tmax-tmin)-dewpoint) * k **(elev/9300)',
       {
-        'tmin': era5.select(['minimum_2m_air_temperature']),
-        'tmax': era5.select(['maximum_2m_air_temperature']),
-        'k': era5.select(['k']),
-        'dewpoint': era5.select(['dewpoint_2m_temperature']),
-        'precip':era5.select(['total_precipitation']),
-        'elev': era5.select(['DSM'])        
+        'tmin': image.select(['minimum_2m_air_temperature']),
+        'tmax': image.select(['maximum_2m_air_temperature']),
+        'k': image.select(['k']),
+        'dewpoint': image.select(['dewpoint_2m_temperature']),
+        'precip':image.select(['total_precipitation']),
+        'elev': image.select(['DSM'])        
       }
     ).rename('CMI'))};
 
