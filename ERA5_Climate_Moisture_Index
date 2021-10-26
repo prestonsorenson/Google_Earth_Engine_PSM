@@ -49,17 +49,25 @@ var k_collection = k_collection.map(replace_k_high);
 
 var era5 = era5.merge(k_collection);
 
+//rename bands
+function renameBands(image) {
+    var bands = ['mean_2m_air_temperature', 'minimum_2m_air_temperature', 'maximum_2m_air_temperature', 'dewpoint_2m_temperature', 'total_precipitation', 'k'];
+    var new_bands =  ['mean_t', 'min_t', 'max_t', 'dewpoint', 'precip', 'k'];
+    return image.select(bands).rename(new_bands);
+}
+var era5 = era5.map(renameBands);
+
 // Function to calculate CMI
 var addCMI = function(image) {
 return image.addBands(
   image.expression(
       '(precip*1000) - 3.1 * (0.5*(tmax-tmin)-dewpoint) * k **(elev/9300)',
       {
-        'tmin': image.select(['minimum_2m_air_temperature']),
-        'tmax': image.select(['maximum_2m_air_temperature']),
+        'tmin': image.select(['min_t']),
+        'tmax': image.select(['max_t']),
         'k': image.select(['k']),
-        'dewpoint': image.select(['dewpoint_2m_temperature']),
-        'precip':image.select(['total_precipitation']),
+        'dewpoint': image.select(['dewpoint']),
+        'precip':image.select(['precip']),
         'elev': elev        
       }
     ).rename('CMI'))};
@@ -74,6 +82,7 @@ var CMI = CMI.median();
 
 //resample to 100 m pixels
 var CMI = CMI.resample('bicubic').reproject({crs:"EPSG:26913", scale:100});
+print(CMI);
 
 // Export the image, specifying scale and region.
 Export.image.toDrive({
