@@ -1,3 +1,5 @@
+//Climate Moisture Index
+//Hogg, E.H., 1997. Temporal scaling of moisture and the forest-grassland boundary in western Canada. Agric. For. Meteorol. 84, 115–122. https://doi.org/10.1016/S0168-1923(96)02380-5
 //not finished still figuring out k value calculation step
 
 //ERA5 Daily Aggregates
@@ -17,7 +19,7 @@ var era5 = ee.ImageCollection('ECMWF/ERA5/DAILY')
 
 //elevation data
 var elev = ee.Image('JAXA/ALOS/AW3D30/V2_2').clip(polygon);
-var elev = elev.select('AVE_DSM');
+var elev = elev.select(['AVE_DSM']);
 
 
 //Elevation Data
@@ -36,7 +38,7 @@ return era5.addBands(
 var era5 = era5.map(addK);
 
 //replace k values less than 0
-var era5_k=era5.select['k'];
+var era5_k=era5.select(['k']);
 var replace_k_low = function (era5_k){
   return era5_k.where(era5_k.lt(0),0).rename('k_low');
 };
@@ -44,7 +46,7 @@ var replace_k_low = function (era5_k){
 var era5 = era5.map(replace_k_low);
 
 //replace k values greater than 1
-var era5_k=era5.select['k_low'];
+var era5_k=era5.select(['k_low']);
 var replace_k_high = function (era5_k){
   return era5_k.where(era5_k.gt(1),1).rename('k_final');
 };
@@ -52,10 +54,11 @@ var replace_k_high = function (era5_k){
 var era5 = era5.map(replace_k_high);
 
 
-// Function to calculate SMI
-var addSMI = function(era5) {
-return image.addBands(image.expression(
-      'precip - 3.1 * (0.5*(tmax-tmin)-dewpoint) * k **(elev/9300)'
+// Function to calculate CMI
+var addCMI = function(era5) {
+return era5.addBands(
+  era5.expression(
+      '(precip*1000) - 3.1 * (0.5*(tmax-tmin)-dewpoint) * k **(elev/9300)',
       {
         'tmin': era5.select(['minimum_2m_air_temperature']),
         'tmax': era5.select(['maximum_2m_air_temperature']),
@@ -66,9 +69,24 @@ return image.addBands(image.expression(
       }
     ).rename('CMI'))};
 
+var era5 = era5.map(addCMI);
 
+//select CMI
+var CMI = era5.select(['CMI']);
 
+//calculate median temperature
+var CMI = CMI.median();
 
+//resample to 100 m pixels
+var CMI = CMI.resample('bicubic').reproject({crs:"EPSG:26913", scale:100});
 
-
-
+// Export the image, specifying scale and region.
+Export.image.toDrive({
+image: CMI, //replace with your image name variable
+description: 'sk_CMI_median_100m',
+scale: 100,
+maxPixels: 1e12,
+region: polygon, //polygon name that you have drawn at step 1
+folder:'sk_CMI_median_100m',
+crs: "EPSG:26913"
+});
