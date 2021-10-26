@@ -21,10 +21,6 @@ var era5 = ee.ImageCollection('ECMWF/ERA5/DAILY')
 var elev = ee.Image('JAXA/ALOS/AW3D30/V2_2').clip(polygon);
 var elev = elev.select(['AVE_DSM']);
 
-
-//Elevation Data
-var era5 = era5.merge(elev);
-
 //calculate k value
 var addK = function(image) {
 return image.addBands(
@@ -42,14 +38,16 @@ var replace_k_low = function (image){
   return image.select(['k']).where(image.select(['k']).lt(0), 0);
   };
   
-var era5 = era5.map(replace_k_low);
+var k_collection = era5.map(replace_k_low);
 
 //replace k values greater than 1
 var replace_k_high = function (image){
   return image.select(['k']).where(image.select(['k']).gt(1), 1);
   };
 
-var era5 = era5.map(replace_k_high);
+var k_collection = k_collection.map(replace_k_high);
+
+var era5 = era5.merge(k_collection);
 
 // Function to calculate CMI
 var addCMI = function(image) {
@@ -62,7 +60,7 @@ return image.addBands(
         'k': image.select(['k']),
         'dewpoint': image.select(['dewpoint_2m_temperature']),
         'precip':image.select(['total_precipitation']),
-        'elev': image.select(['DSM'])        
+        'elev': elev        
       }
     ).rename('CMI'))};
 
