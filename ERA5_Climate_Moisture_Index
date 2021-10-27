@@ -1,5 +1,5 @@
 //Climate Moisture Index
-//Hogg, E.H., 1997. Temporal scaling of moisture and the forest-grassland boundary in western Canada. Agric. For. Meteorol. 84, 115–122. https://doi.org/10.1016/S0168-1923(96)02380-5
+//Hogg, E.H., Barr, A.G., Black, T.A., 2013. A simple soil moisture index for representing multi-year drought impacts on aspen productivity in the western Canadian interior. Agric. For. Meteorol. 178–179, 173–182. https://doi.org/10.1016/j.agrformet.2013.04.025
 //not finished still figuring out k value calculation step
 
 //ERA5 Daily Aggregates
@@ -10,75 +10,131 @@ var polygon = ee.Geometry.Polygon({
   geodesic: false
 });
 
-
 // Daily Climate Data
 var era5 = ee.ImageCollection('ECMWF/ERA5/DAILY')
                    .filter(ee.Filter.calendarRange(1979,2020,'year'))
                    .filterBounds(polygon)
                    ;
 
+//rename bands
+function renameBands(image) {
+    var bands = ['mean_2m_air_temperature', 'minimum_2m_air_temperature', 'maximum_2m_air_temperature', 'dewpoint_2m_temperature', 'total_precipitation'];
+    var new_bands =  ['mean_t', 'min_t', 'max_t', 'dewpoint', 'precip'];
+    return image.select(bands).rename(new_bands);
+}
+var era5 = era5.map(renameBands);
+
 //elevation data
 var elev = ee.Image('JAXA/ALOS/AW3D30/V2_2').clip(polygon);
 var elev = elev.select(['AVE_DSM']);
+var elev = ee.ImageCollection(elev);
+
+// add elevation data to climate image collection with inner join
+var filter = ee.Filter.equals({
+  leftField: 'system:time_start',
+  rightField: 'system:time_start'
+});
+
+var simpleJoin = ee.Join.inner();
+
+var innerJoin = ee.ImageCollection(simpleJoin.apply(era5, elev, filter));
+
+var era5 = innerJoin.map(function(feature) {
+  return ee.Image.cat(feature.get('primary'), feature.get('secondary'));
+});
 
 //calculate k value
 var addK = function(image) {
 return image.addBands(
   image.expression(
-      '(tmean+5)/(15)',
+      '(tmean+5-273.15)/(15)',
       {
-        'tmean': image.select(['mean_2m_air_temperature']),
+        'tmean': image.select(['mean_t']),
       }
     ).rename('k'))};
 
 var era5 = era5.map(addK);
 
+
+//plot
+var k_median = era5.select(['k']).median();
+
+// Create palettes for display of CMI
+var cmi_pal = ['#d73027', '#f46d43', '#fdae61', '#fee08b', '#d9ef8b',
+'#a6d96a'];
+
+// Display NDVI results on map
+Map.addLayer(k_median.clip(polygon), {min:0, max:1, palette: cmi_pal}, 'k');
+
+
 //replace k values less than 0
 var replace_k_low = function (image){
-  return image.select(['k']).where(image.select(['k']).lt(0), 0);
+  return image.select(['k']).where(image.select(['mean_t']).lt(268.15), 0);
   };
   
 var k_collection = era5.map(replace_k_low);
 
+//join k values with overall collection
+var innerJoin = ee.ImageCollection(simpleJoin.apply(era5, k_collection, filter));
+
+var k_collection = innerJoin.map(function(feature) {
+  return ee.Image.cat(feature.get('primary'), feature.get('secondary'));
+});
+
+
 //replace k values greater than 1
 var replace_k_high = function (image){
-  return image.select(['k']).where(image.select(['k']).gt(1), 1);
+  return image.select(['k']).where(image.select(['mean_t']).gt(283.15), 1);
   };
 
 var k_collection = k_collection.map(replace_k_high);
 
-var era5 = era5.merge(k_collection);
+//plot
+var k_median_thresh = k_collection.median();
 
-//rename bands
-function renameBands(image) {
-    var bands = ['mean_2m_air_temperature', 'minimum_2m_air_temperature', 'maximum_2m_air_temperature', 'dewpoint_2m_temperature', 'total_precipitation', 'k'];
-    var new_bands =  ['mean_t', 'min_t', 'max_t', 'dewpoint', 'precip', 'k'];
-    return image.select(bands).rename(new_bands);
-}
-var era5 = era5.map(renameBands);
+// Create palettes for display of CMI
+var cmi_pal = ['#d73027', '#f46d43', '#fdae61', '#fee08b', '#d9ef8b',
+'#a6d96a'];
+
+// Display NDVI results on map
+Map.addLayer(k_median_thresh.clip(polygon), {min:0, max:1, palette: cmi_pal}, 'k_thresh');
+
+
+//join k values with overall collection
+var innerJoin = ee.ImageCollection(simpleJoin.apply(era5, k_collection, filter));
+
+var era5 = innerJoin.map(function(feature) {
+  return ee.Image.cat(feature.get('primary'), feature.get('secondary'));
+});
 
 // Function to calculate CMI
 var addCMI = function(image) {
 return image.addBands(
   image.expression(
-      '(precip*1000) - 3.1 * (0.5*(tmax-tmin)-dewpoint) * k **(elev/9300)',
+      '(precip*1000) - (3.1 * (0.5*((tmax-273.15)+(tmin-273.15))-(dewpoint-273.15)) * k) **(elev/9300)',
       {
         'tmin': image.select(['min_t']),
         'tmax': image.select(['max_t']),
         'k': image.select(['k']),
         'dewpoint': image.select(['dewpoint']),
         'precip':image.select(['precip']),
-        'elev': elev        
+        'elev': image.select(['AVE_DSM'])        
       }
     ).rename('CMI'))};
-
 var era5 = era5.map(addCMI);
 
 //select CMI
 var CMI = era5.select(['CMI']);
 
 //calculate median temperature
-var CMI = CMI.median();
+var CMI = CMI.sum();
+
+// Create palettes for display of CMI
+var cmi_pal = ['#d73027', '#f46d43', '#fdae61', '#fee08b', '#d9ef8b',
+'#a6d96a'];
+
+// Display NDVI results on map
+Map.addLayer(CMI.clip(polygon), {min:-5, max:5, palette: cmi_pal}, 'CMI');
 
 //resample to 100 m pixels
 var CMI = CMI.resample('bicubic').reproject({crs:"EPSG:26913", scale:100});
