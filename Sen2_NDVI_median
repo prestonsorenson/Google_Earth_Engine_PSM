@@ -41,6 +41,7 @@ var collection =
     .filter(ee.Filter.calendarRange(2015,2020,'year'))
     .filter(ee.Filter.calendarRange(5,10,'month'))
     .filterBounds(polygon)
+    .map(maskS2clouds);
 
 // Function to calculate and add an NDVI band
 var addNDVI = function(image) {
