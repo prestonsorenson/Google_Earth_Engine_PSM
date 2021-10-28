@@ -111,7 +111,7 @@ var era5 = innerJoin.map(function(feature) {
 var addCMI = function(image) {
 return image.addBands(
   image.expression(
-      '(precip*1000) - (3.1 * (0.5*((tmax-273.15)+(tmin-273.15))-(dewpoint-273.15)) * k) **(elev/9300)',
+      '(precip*1000) - (3.1 * 0.5*((tmax-273.15)+(tmin-273.15))-(dewpoint-273.15)) * k **(elev/9300)',
       {
         'tmin': image.select(['min_t']),
         'tmax': image.select(['max_t']),
