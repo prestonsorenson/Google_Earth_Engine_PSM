@@ -9,11 +9,10 @@
 
 // Filter to only include images within a defined area.
 var polygon = ee.Geometry.Polygon({
-  coords: [[[-114.06, 49.00], [-115.22, 51.53], [-116.23, 53.74], [-115.82, 55.94], [-109.76, 56.03], [-109.81, 49.00]
+  coords: [[[-102.00, 49.00], [-102.00, 50.00], [-101.00, 50.00], [-101.00, 49.00]
   ]],
   geodesic: false
 });
-
 ///////////////////////////////////////////////////////////////////////////////
 //Define Sentinel-1 functions
 ///////////////////////////////////////////////////////////////////////////////
@@ -22,7 +21,7 @@ var polygon = ee.Geometry.Polygon({
 function S1Prep(image) {
   var first = image.addBands(image.select('VV').subtract(image.select('angle').multiply(Math.PI/180.0).cos().log10().multiply(10.0)).rename('VV_Gamma'));
   var second = first.addBands(image.select('VH').subtract(image.select('angle').multiply(Math.PI/180.0).cos().log10().multiply(10.0)).rename('VH_Gamma'));
-  return second.addBands(second.normalizedDifference(['VH_Gamma', 'VV_Gamma']).rename('NDPOL'));
+  return second;
 }
 
 //Sigma Lee filter
@@ -173,7 +172,6 @@ var collection = collection.map(maskAng4);
 ///////////////////////////////////////////////////////////////////////////////
 var collection = collection.map(S1Prep);
 var VH = collection.select(['VH_Gamma']);
-var NDPOL = collection.select(['NDPOL']);
 var VH = VH.map(toNatural);
 var VH = VH.map(RefinedLee);
 var VH = VH.map(toDB);
@@ -202,7 +200,17 @@ var VV = VV.map(renameBandsVV);
 ///////////////////////////////////////////////////////////////////////////////
 //NDPOL
 ///////////////////////////////////////////////////////////////////////////////
-var NDPOL_collection = VV.combine(VH);
+var Join = ee.Join.inner();
+var FilterOnStartTime = ee.Filter.equals({'leftField': 'ID', 
+                                          'rightField': 'ID'
+                                         });
+
+//var NDPOL_collection = Join.apply(VV, VH, FilterOnStartTime);
+var NDPOL_collection=VV.combine(VH);
+
+print(VV);
+print(VH);
+print(NDPOL_collection);
 
 var addNDPOL = function(image) {
 return image.addBands(image.normalizedDifference(['VH', 'VV']));
@@ -222,7 +230,6 @@ var VV = VV.median();
 var VH = VH.median();
 var NDPOL = NDPOL.median();
 
-Map.addLayer(VH, {min:-20, max:0}, 'VH');
 ///////////////////////////////////////////////////////////////////////////////
 //END
 ///////////////////////////////////////////////////////////////////////////////
@@ -234,14 +241,15 @@ var median = median.float();
 
 print(median);
 
+Map.addLayer(median, {min:-20, max:0}, 'VH');
 
 // Export the image, specifying scale and region.
 Export.image.toDrive({
 image: median, //replace with your image name variable
-description: 'sab_sen1_mosaic',
-scale: 10,
+description: 'sk_sen1_mosaic_250m',
+scale: 250,
 maxPixels: 1e12,
 region: polygon, //polygon name that you have drawn at step 1
-folder:'sab_sen1_mosaic',
-crs: "EPSG:26912"
+folder:'sk_sen1_mosaic_250m',
+crs: "EPSG:26913"
 });
