@@ -172,7 +172,6 @@ var collection = collection.map(maskAng4);
 ///////////////////////////////////////////////////////////////////////////////
 var collection = collection.map(S1Prep);
 var VH = collection.select(['VH_Gamma']);
-var NDPOL = collection.select(['NDPOL']);
 var VH = VH.map(toNatural);
 var VH = VH.map(RefinedLee);
 var VH = VH.map(toDB);
