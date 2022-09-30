@@ -8,7 +8,7 @@
 
 // Filter to only include images within a defined area.
 var polygon = ee.Geometry.Polygon({
-  coords: [[[-114.06, 49.00], [-115.22, 51.53], [-116.23, 53.74], [-115.82, 55.94], [-109.76, 56.03], [-109.81, 49.00]
+  coords: [[[-110.00, 49.00], [-110.00, 60.00], [-101.00, 60.00], [-101.00, 49.00]
   ]],
   geodesic: false
 });
@@ -36,37 +36,98 @@ function maskS2clouds(image) {
 
 // Create a Sentinel 2 composite for Spring of 2019, and filter by
 // the bounds of the FeatureCollection.
+var collection_5 = 
+    ee.ImageCollection('COPERNICUS/S2_SR')
+    .filter(ee.Filter.calendarRange(2017,2022,'year'))
+    .filter(ee.Filter.calendarRange(5,5,'month'))
+    .filterBounds(polygon)
+    .map(maskS2clouds);
+var collection_6 = 
+    ee.ImageCollection('COPERNICUS/S2_SR')
+    .filter(ee.Filter.calendarRange(2017,2022,'year'))
+    .filter(ee.Filter.calendarRange(6,6,'month'))
+    .filterBounds(polygon)
+    .map(maskS2clouds);
+var collection_7 = 
+    ee.ImageCollection('COPERNICUS/S2_SR')
+    .filter(ee.Filter.calendarRange(2017,2022,'year'))
+    .filter(ee.Filter.calendarRange(7,7,'month'))
+    .filterBounds(polygon)
+    .map(maskS2clouds);
+var collection_8 = 
+    ee.ImageCollection('COPERNICUS/S2_SR')
+    .filter(ee.Filter.calendarRange(2017,2022,'year'))
+    .filter(ee.Filter.calendarRange(8,8,'month'))
+    .filterBounds(polygon)
+    .map(maskS2clouds);
+var collection_9 = 
+    ee.ImageCollection('COPERNICUS/S2_SR')
+    .filter(ee.Filter.calendarRange(2017,2022,'year'))
+    .filter(ee.Filter.calendarRange(9,9,'month'))
+    .filterBounds(polygon)
+    .map(maskS2clouds);
+var collection_10 = 
+    ee.ImageCollection('COPERNICUS/S2_SR')
+    .filter(ee.Filter.calendarRange(2017,2022,'year'))
+    .filter(ee.Filter.calendarRange(10,10,'month'))
+    .filterBounds(polygon)
+    .map(maskS2clouds);
+    
 var collection = 
-    ee.ImageCollection('COPERNICUS/S2')
-    .filter(ee.Filter.calendarRange(2015,2020,'year'))
+    ee.ImageCollection('COPERNICUS/S2_SR')
+    .filter(ee.Filter.calendarRange(2017,2022,'year'))
     .filter(ee.Filter.calendarRange(5,10,'month'))
     .filterBounds(polygon)
     .map(maskS2clouds);
-
+    
 // Function to calculate and add an NDVI band
 var addNDVI = function(image) {
 return image.addBands(image.normalizedDifference(['B8', 'B4']));
 };
 
+//seperate monthly
 var collection = collection.map(addNDVI);
+var collection_5 = collection_5.map(addNDVI);
+var collection_6 = collection_6.map(addNDVI);
+var collection_7 = collection_7.map(addNDVI);
+var collection_8 = collection_8.map(addNDVI);
+var collection_9 = collection_9.map(addNDVI);
+var collection_10 = collection_10.map(addNDVI);
 
 var NDVI = collection.select(['nd']);
-var NDVImed = NDVI.median(); //I just changed the name of this variable ;)
+var NDVI_5 = collection_5.select(['nd']);
+var NDVI_6 = collection_6.select(['nd']);
+var NDVI_7 = collection_7.select(['nd']);
+var NDVI_8 = collection_8.select(['nd']);
+var NDVI_9 = collection_9.select(['nd']);
+var NDVI_10 = collection_10.select(['nd']);
+
+//get median per month
+var NDVImed_5=NDVI_5.median().rename('NDVI_5');
+var NDVImed_6=NDVI_6.median().rename('NDVI_6');
+var NDVImed_7=NDVI_7.median().rename('NDVI_7');
+var NDVImed_8=NDVI_8.median().rename('NDVI_8');
+var NDVImed_9=NDVI_9.median().rename('NDVI_9');
+var NDVImed_10=NDVI_10.median().rename('NDVI_10');
+var NDVImed=NDVI.median().rename('NDVI_5_10');
+
+//combine bands
+var NDVImed = NDVImed.addBands([NDVImed_5, NDVImed_6,NDVImed_7, NDVImed_8, NDVImed_9, NDVImed_10]);
 
 // Create palettes for display of NDVI
 var ndvi_pal = ['#d73027', '#f46d43', '#fdae61', '#fee08b', '#d9ef8b',
 '#a6d96a'];
 
 // Display NDVI results on map
-Map.addLayer(NDVImed.clip(polygon), {min:-0.5, max:0.9, palette: ndvi_pal}, 'NDVI');
+Map.addLayer(NDVImed_7.clip(polygon), {min:0, max:0.9, palette: ndvi_pal}, 'NDVI');
 
 // Export the image, specifying scale and region.
 Export.image.toDrive({
 image: NDVImed, //replace with your image name variable
-description: 'sab_sen2_ndvi_median',
+description: 'sk_sen2_ndvi_median',
 scale: 10,
 maxPixels: 1e12,
 region: polygon, //polygon name that you have drawn at step 1
-folder:'sab_sen2_ndvi_median',
-crs: "EPSG:26912"
+folder:'sk_sen2_ndvi_median',
+crs: "EPSG:26913"
 });
