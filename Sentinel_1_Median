@@ -200,24 +200,22 @@ var VV = VV.map(renameBandsVV);
 ///////////////////////////////////////////////////////////////////////////////
 //NDPOL
 ///////////////////////////////////////////////////////////////////////////////
-var Join = ee.Join.inner();
-var FilterOnStartTime = ee.Filter.equals({'leftField': 'ID', 
-                                          'rightField': 'ID'
-                                         });
+var addNDPOL = function(image) {
+return image.addBands(image.expression(
+      '(VH - VV) / (VH + VH)', {
+        'VH': image.select(['VV']),
+        'VV': image.select(['VH'])
+        }
+    ).rename('NDPOL'))};
 
-//var NDPOL_collection = Join.apply(VV, VH, FilterOnStartTime);
-var NDPOL_collection=VV.combine(VH);
 
-print(VV);
-print(VH);
+var NDPOL_collection = VV.combine(VH);
+
 print(NDPOL_collection);
 
-var addNDPOL = function(image) {
-return image.addBands(image.normalizedDifference(['VH', 'VV']));
-};
-
 var NDPOL_collection = NDPOL_collection.map(addNDPOL);
-var NDPOL = NDPOL_collection.select(['nd']);
+var NDPOL = NDPOL_collection.select(['NDPOL']);
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //END
@@ -230,6 +228,16 @@ var VV = VV.median();
 var VH = VH.median();
 var NDPOL = NDPOL.median();
 
+var meanDictionary = NDPOL.reduceRegion({
+  reducer: ee.Reducer.mean(),
+  geometry: polygon,
+  scale: 250,
+  maxPixels: 1e9
+});
+
+print(meanDictionary);
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //END
 ///////////////////////////////////////////////////////////////////////////////
@@ -241,7 +249,7 @@ var median = median.float();
 
 print(median);
 
-Map.addLayer(median, {min:-20, max:0}, 'VH');
+Map.addLayer(median, {min:-1, max:1}, 'NDPOL');
 
 // Export the image, specifying scale and region.
 Export.image.toDrive({
