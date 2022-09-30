@@ -56,16 +56,7 @@ return image.addBands(
 
 var era5 = era5.map(addK);
 
-
-//plot
-var k_median = era5.select(['k']).median();
-
-// Create palettes for display of CMI
-var cmi_pal = ['#d73027', '#f46d43', '#fdae61', '#fee08b', '#d9ef8b',
-'#a6d96a'];
-
-// Display NDVI results on map
-Map.addLayer(k_median.clip(polygon), {min:0, max:1, palette: cmi_pal}, 'k');
+var k_collection = era5.select(['k', 'mean_t']);
 
 
 //replace k values less than 0
@@ -73,7 +64,7 @@ var replace_k_low = function (image){
   return image.select(['k']).where(image.select(['mean_t']).lt(268.15), 0);
   };
   
-var k_collection = era5.map(replace_k_low);
+var k_collection = k_collection.map(replace_k_low);
 
 //join k values with overall collection
 var innerJoin = ee.ImageCollection(simpleJoin.apply(era5, k_collection, filter));
@@ -89,6 +80,8 @@ var replace_k_high = function (image){
   };
 
 var k_collection = k_collection.map(replace_k_high);
+
+var k_collection= k_collection.select(['k']);
 
 //plot
 var k_median_thresh = k_collection.median();
