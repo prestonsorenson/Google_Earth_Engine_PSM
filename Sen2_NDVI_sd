@@ -8,7 +8,7 @@
 
 // Filter to only include images within a defined area.
 var polygon = ee.Geometry.Polygon({
-  coords: [[[-110.00, 49.00], [-110.00, 50.00], [-111.00, 50.00], [-111.00, 49.00]
+  coords: [[[-110.00, 49.00], [-110.00, 49.20], [-111.00, 49.20], [-111.00, 49.00]
   ]],
   geodesic: false
 });
@@ -130,12 +130,12 @@ var month_8=ee.Image.constant(8).toFloat();
 var month_9=ee.Image.constant(9).toFloat();
 var month_10=ee.Image.constant(10).toFloat();
 
-var NDVImed_5_month=NDVImed_5.addBands(month_5);
-var NDVImed_6_month=NDVImed_6.addBands(month_6);
-var NDVImed_7_month=NDVImed_7.addBands(month_7);
-var NDVImed_8_month=NDVImed_8.addBands(month_8);
-var NDVImed_9_month=NDVImed_9.addBands(month_9);
-var NDVImed_10_month=NDVImed_10.addBands(month_10);
+var NDVImed_5_month=NDVImed_5.addBands(month_5).rename(['NDVI', 'month']);
+var NDVImed_6_month=NDVImed_6.addBands(month_6).rename(['NDVI', 'month']);
+var NDVImed_7_month=NDVImed_7.addBands(month_7).rename(['NDVI', 'month']);
+var NDVImed_8_month=NDVImed_8.addBands(month_8).rename(['NDVI', 'month']);
+var NDVImed_9_month=NDVImed_9.addBands(month_9).rename(['NDVI', 'month']);
+var NDVImed_10_month=NDVImed_10.addBands(month_10).rename(['NDVI', 'month']);
 
 
 var all_months = ee.ImageCollection([NDVImed_5_month, NDVImed_6_month, NDVImed_7_month, NDVImed_8_month, NDVImed_9_month, NDVImed_10_month]);
@@ -143,15 +143,17 @@ var names = ee.List(all_months.aggregate_array("system:id"));
 
 var max_month = all_months.reduce(ee.Reducer.max(2)).rename('max', 'max_t_step').select(['max_t_step']);
 
-print (max_month);
+var max_month = max_month.toFloat();
 
 //Add calculated bands
 var NDVImed = NDVImed.addBands(NDVI_min_max);
-var NDVImed = NDVImed.addBands(max_month);
 
 //add standard deviation of NDVI
 var NDVI_sd = NDVI.reduce(ee.Reducer.stdDev()).rename('NDVI_sd').toFloat();
 var NDVImed = NDVImed.addBands(NDVI_sd);
+
+var NDVImed = NDVImed.addBands(max_month);
+
 
 // Create palettes for display of NDVI
 var ndvi_pal = ['#d73027', '#f46d43', '#fdae61', '#fee08b', '#d9ef8b',
@@ -161,8 +163,6 @@ var ndvi_pal = ['#d73027', '#f46d43', '#fdae61', '#fee08b', '#d9ef8b',
 Map.addLayer(NDVI_min_max.clip(polygon), {min:0, max:0.5, palette: ndvi_pal}, 'NDVI Max - Min');
 Map.addLayer(NDVI_sd.clip(polygon), {min:0, max:0.3, palette: ndvi_pal}, 'NDVI SD');
 Map.addLayer(max_month.clip(polygon), {min:5, max:10, palette: ndvi_pal}, 'Max Month');
-
-//Map.addLayer(NDVI_max_month.clip(polygon), {min:1, max:7, palette: ndvi_pal}, 'Month');
 
 // Export the image, specifying scale and region.
 Export.image.toDrive({
