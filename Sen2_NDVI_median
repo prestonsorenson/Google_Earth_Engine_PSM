@@ -8,7 +8,7 @@
 
 // Filter to only include images within a defined area.
 var polygon = ee.Geometry.Polygon({
-  coords: [[[-110.00, 49.00], [-110.00, 60.00], [-101.00, 60.00], [-101.00, 49.00]
+  coords: [[[-110.00, 49.00], [-110.00, 55.00], [-101.00, 55.00], [-101.00, 49.00]
   ]],
   geodesic: false
 });
@@ -114,12 +114,22 @@ var NDVImed=NDVI.median().rename('NDVI_5_10');
 //combine bands
 var NDVImed = NDVImed.addBands([NDVImed_5, NDVImed_6,NDVImed_7, NDVImed_8, NDVImed_9, NDVImed_10]);
 
+//get min - max
+var NDVImax = NDVImed.reduce(ee.Reducer.max());
+var NDVImin = NDVImed.reduce(ee.Reducer.min());
+
+var NDVI_min_max = NDVImax.subtract(NDVImin);
+
+
+//Add calculated bands
+var NDVImed = NDVImed.addBands(NDVI_min_max);
+
 // Create palettes for display of NDVI
 var ndvi_pal = ['#d73027', '#f46d43', '#fdae61', '#fee08b', '#d9ef8b',
 '#a6d96a'];
 
 // Display NDVI results on map
-Map.addLayer(NDVImed_7.clip(polygon), {min:0, max:0.9, palette: ndvi_pal}, 'NDVI');
+Map.addLayer(NDVI_min_max.clip(polygon), {min:0, max:0.5, palette: ndvi_pal}, 'NDVI');
 
 // Export the image, specifying scale and region.
 Export.image.toDrive({
