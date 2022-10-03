@@ -8,7 +8,7 @@
 
 // Filter to only include images within a defined area.
 var polygon = ee.Geometry.Polygon({
-  coords: [[[-110.00, 49.00], [-110.00, 55.00], [-101.00, 55.00], [-101.00, 49.00]
+  coords: [[[-110.00, 49.00], [-110.00, 49.20], [-111.00, 49.20], [-111.00, 49.00]
   ]],
   geodesic: false
 });
@@ -103,16 +103,17 @@ var NDVI_9 = collection_9.select(['nd']);
 var NDVI_10 = collection_10.select(['nd']);
 
 //get median per month
-var NDVImed_5=NDVI_5.median().rename('NDVI_5');
-var NDVImed_6=NDVI_6.median().rename('NDVI_6');
-var NDVImed_7=NDVI_7.median().rename('NDVI_7');
-var NDVImed_8=NDVI_8.median().rename('NDVI_8');
-var NDVImed_9=NDVI_9.median().rename('NDVI_9');
-var NDVImed_10=NDVI_10.median().rename('NDVI_10');
-var NDVImed=NDVI.median().rename('NDVI_5_10');
+var NDVImed_5=NDVI_5.median().rename('NDVI_5').set("system:id", "t5").toFloat();
+var NDVImed_6=NDVI_6.median().rename('NDVI_6').set("system:id", "t6").toFloat();
+var NDVImed_7=NDVI_7.median().rename('NDVI_7').set("system:id", "t7").toFloat();
+var NDVImed_8=NDVI_8.median().rename('NDVI_8').set("system:id", "t8").toFloat();
+var NDVImed_9=NDVI_9.median().rename('NDVI_9').set("system:id", "t9").toFloat();
+var NDVImed_10=NDVI_10.median().rename('NDVI_10').set("system:id", "t10").toFloat();
+var NDVImed=NDVI.median().rename('NDVI_5_10').set("system:id", "t5_t10").toFloat();
 
 //combine bands
 var NDVImed = NDVImed.addBands([NDVImed_5, NDVImed_6,NDVImed_7, NDVImed_8, NDVImed_9, NDVImed_10]);
+
 
 //get min - max
 var NDVImax = NDVImed.reduce(ee.Reducer.max());
@@ -120,16 +121,48 @@ var NDVImin = NDVImed.reduce(ee.Reducer.min());
 
 var NDVI_min_max = NDVImax.subtract(NDVImin);
 
+//get which month had max NDVI
+//create constants equal to the month as a band for the image collection
+var month_5=ee.Image.constant(5).toFloat();
+var month_6=ee.Image.constant(6).toFloat();
+var month_7=ee.Image.constant(7).toFloat();
+var month_8=ee.Image.constant(8).toFloat();
+var month_9=ee.Image.constant(9).toFloat();
+var month_10=ee.Image.constant(10).toFloat();
+
+var NDVImed_5_month=NDVImed_5.addBands(month_5).rename(['NDVI', 'month']);
+var NDVImed_6_month=NDVImed_6.addBands(month_6).rename(['NDVI', 'month']);
+var NDVImed_7_month=NDVImed_7.addBands(month_7).rename(['NDVI', 'month']);
+var NDVImed_8_month=NDVImed_8.addBands(month_8).rename(['NDVI', 'month']);
+var NDVImed_9_month=NDVImed_9.addBands(month_9).rename(['NDVI', 'month']);
+var NDVImed_10_month=NDVImed_10.addBands(month_10).rename(['NDVI', 'month']);
+
+
+var all_months = ee.ImageCollection([NDVImed_5_month, NDVImed_6_month, NDVImed_7_month, NDVImed_8_month, NDVImed_9_month, NDVImed_10_month]);
+var names = ee.List(all_months.aggregate_array("system:id"));
+
+var max_month = all_months.reduce(ee.Reducer.max(2)).rename('max', 'max_t_step').select(['max_t_step']);
+
+var max_month = max_month.toFloat();
 
 //Add calculated bands
 var NDVImed = NDVImed.addBands(NDVI_min_max);
+
+//add standard deviation of NDVI
+var NDVI_sd = NDVI.reduce(ee.Reducer.stdDev()).rename('NDVI_sd').toFloat();
+var NDVImed = NDVImed.addBands(NDVI_sd);
+
+var NDVImed = NDVImed.addBands(max_month);
+
 
 // Create palettes for display of NDVI
 var ndvi_pal = ['#d73027', '#f46d43', '#fdae61', '#fee08b', '#d9ef8b',
 '#a6d96a'];
 
 // Display NDVI results on map
-Map.addLayer(NDVI_min_max.clip(polygon), {min:0, max:0.5, palette: ndvi_pal}, 'NDVI');
+Map.addLayer(NDVI_min_max.clip(polygon), {min:0, max:0.5, palette: ndvi_pal}, 'NDVI Max - Min');
+Map.addLayer(NDVI_sd.clip(polygon), {min:0, max:0.3, palette: ndvi_pal}, 'NDVI SD');
+Map.addLayer(max_month.clip(polygon), {min:5, max:10, palette: ndvi_pal}, 'Max Month');
 
 // Export the image, specifying scale and region.
 Export.image.toDrive({
