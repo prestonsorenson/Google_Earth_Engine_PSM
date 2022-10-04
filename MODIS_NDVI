@@ -21,7 +21,6 @@ var maskClouds = function(image) {
 var collection = 
     ee.ImageCollection('MODIS/061/MOD09GQ')
     .filter(ee.Filter.calendarRange(2000,2022,'year'))
-    .filter(ee.Filter.calendarRange(5,10,'month'))
     .filterBounds(polygon)
     ;
 
