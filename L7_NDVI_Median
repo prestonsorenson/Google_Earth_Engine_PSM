@@ -139,7 +139,6 @@ var NDVImed_10_month=NDVImed_10.addBands(month_10).rename(['NDVI', 'month']);
 
 
 var all_months = ee.ImageCollection([NDVImed_5_month, NDVImed_6_month, NDVImed_7_month, NDVImed_8_month, NDVImed_9_month, NDVImed_10_month]);
-var names = ee.List(all_months.aggregate_array("system:id"));
 
 var max_month = all_months.reduce(ee.Reducer.max(2)).rename('max', 'max_t_step').select(['max_t_step']);
 
