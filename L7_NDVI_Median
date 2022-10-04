@@ -37,42 +37,6 @@ var cloudMaskL457 = function(image) {
 
 // Create a Sentinel 2 composite for Spring of 2019, and filter by
 // the bounds of the FeatureCollection.
-var collection_5 = 
-    ee.ImageCollection('LANDSAT/LE07/C01/T1_SR')
-    .filter(ee.Filter.calendarRange(1999,2022,'year'))
-    .filter(ee.Filter.calendarRange(5,5,'month'))
-    .filterBounds(polygon)
-    .map(cloudMaskL457);
-var collection_6 = 
-    ee.ImageCollection('LANDSAT/LE07/C01/T1_SR')
-    .filter(ee.Filter.calendarRange(1999,2022,'year'))
-    .filter(ee.Filter.calendarRange(6,6,'month'))
-    .filterBounds(polygon)
-    .map(cloudMaskL457);
-var collection_7 = 
-    ee.ImageCollection('LANDSAT/LE07/C01/T1_SR')
-    .filter(ee.Filter.calendarRange(1999,2022,'year'))
-    .filter(ee.Filter.calendarRange(7,7,'month'))
-    .filterBounds(polygon)
-    .map(cloudMaskL457);
-var collection_8 = 
-    ee.ImageCollection('LANDSAT/LE07/C01/T1_SR')
-    .filter(ee.Filter.calendarRange(1999,2022,'year'))
-    .filter(ee.Filter.calendarRange(8,8,'month'))
-    .filterBounds(polygon)
-    .map(cloudMaskL457);
-var collection_9 = 
-    ee.ImageCollection('LANDSAT/LE07/C01/T1_SR')
-    .filter(ee.Filter.calendarRange(1999,2022,'year'))
-    .filter(ee.Filter.calendarRange(9,9,'month'))
-    .filterBounds(polygon)
-    .map(cloudMaskL457);
-var collection_10 = 
-    ee.ImageCollection('LANDSAT/LE07/C01/T1_SR')
-    .filter(ee.Filter.calendarRange(1999,2022,'year'))
-    .filter(ee.Filter.calendarRange(10,10,'month'))
-    .filterBounds(polygon)
-    .map(cloudMaskL457);
 var collection = 
     ee.ImageCollection('LANDSAT/LE07/C01/T1_SR')
     .filter(ee.Filter.calendarRange(1999,2022,'year'))
@@ -87,33 +51,20 @@ return image.addBands(image.normalizedDifference(['B4', 'B3']));
 
 //seperate monthly
 var collection = collection.map(addNDVI);
-var collection_5 = collection_5.map(addNDVI);
-var collection_6 = collection_6.map(addNDVI);
-var collection_7 = collection_7.map(addNDVI);
-var collection_8 = collection_8.map(addNDVI);
-var collection_9 = collection_9.map(addNDVI);
-var collection_10 = collection_10.map(addNDVI);
 
 var NDVI = collection.select(['nd']);
-var NDVI_5 = collection_5.select(['nd']);
-var NDVI_6 = collection_6.select(['nd']);
-var NDVI_7 = collection_7.select(['nd']);
-var NDVI_8 = collection_8.select(['nd']);
-var NDVI_9 = collection_9.select(['nd']);
-var NDVI_10 = collection_10.select(['nd']);
 
 //get median per month
-var NDVImed_5=NDVI_5.median().rename('NDVI_5').set("system:id", "t5").toFloat();
-var NDVImed_6=NDVI_6.median().rename('NDVI_6').set("system:id", "t6").toFloat();
-var NDVImed_7=NDVI_7.median().rename('NDVI_7').set("system:id", "t7").toFloat();
-var NDVImed_8=NDVI_8.median().rename('NDVI_8').set("system:id", "t8").toFloat();
-var NDVImed_9=NDVI_9.median().rename('NDVI_9').set("system:id", "t9").toFloat();
-var NDVImed_10=NDVI_10.median().rename('NDVI_10').set("system:id", "t10").toFloat();
+var NDVImed_5=NDVI.filter(ee.Filter.calendarRange(5,5,'month')).median().rename('NDVI_5').set("system:id", "t5").toFloat();
+var NDVImed_6=NDVI.filter(ee.Filter.calendarRange(6,6,'month')).median().rename('NDVI_6').set("system:id", "t6").toFloat();
+var NDVImed_7=NDVI.filter(ee.Filter.calendarRange(7,7,'month')).median().rename('NDVI_7').set("system:id", "t7").toFloat();
+var NDVImed_8=NDVI.filter(ee.Filter.calendarRange(8,8,'month')).median().rename('NDVI_8').set("system:id", "t8").toFloat();
+var NDVImed_9=NDVI.filter(ee.Filter.calendarRange(9,9,'month')).median().rename('NDVI_9').set("system:id", "t9").toFloat();
+var NDVImed_10=NDVI.filter(ee.Filter.calendarRange(10,10,'month')).median().rename('NDVI_10').set("system:id", "t10").toFloat();
 var NDVImed=NDVI.median().rename('NDVI_5_10').set("system:id", "t5_t10").toFloat();
 
 //combine bands
 var NDVImed = NDVImed.addBands([NDVImed_5, NDVImed_6,NDVImed_7, NDVImed_8, NDVImed_9, NDVImed_10]);
-
 
 //get min - max
 var NDVImax = NDVImed.reduce(ee.Reducer.max());
