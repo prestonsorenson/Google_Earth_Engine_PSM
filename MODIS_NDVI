@@ -1,0 +1,213 @@
+//MODIS
+
+var polygon = ee.Geometry.Polygon({
+  coords: [[[-110.00, 49.00], [-110.00, 55.00], [-101.00, 55.00], [-101.00, 49.00]
+  ]],
+  geodesic: false
+});
+
+
+var maskClouds = function(image) {
+  // Select the QA band.
+  var QA = image.select('state_1km');
+  // Make a mask to get bit 10, the internal_cloud_algorithm_flag bit.
+  var bitMask = 1 << 10;
+  // Return an image masking out cloudy areas.
+  return image.updateMask(QA.bitwiseAnd(bitMask).eq(0));
+};
+
+// Create a Sentinel 2 composite for Spring of 2019, and filter by
+// the bounds of the FeatureCollection.
+var collection_5 = 
+    ee.ImageCollection('MODIS/061/MOD09GQ')
+    .filter(ee.Filter.calendarRange(2000,2022,'year'))
+    .filter(ee.Filter.calendarRange(5,5,'month'))
+    .filterBounds(polygon)
+    ;
+var collection_6 = 
+    ee.ImageCollection('MODIS/061/MOD09GQ')
+    .filter(ee.Filter.calendarRange(2000,2022,'year'))
+    .filter(ee.Filter.calendarRange(6,6,'month'))
+    .filterBounds(polygon)
+    ;
+var collection_7 = 
+    ee.ImageCollection('MODIS/061/MOD09GQ')
+    .filter(ee.Filter.calendarRange(2000,2022,'year'))
+    .filter(ee.Filter.calendarRange(7,7,'month'))
+    .filterBounds(polygon)
+    ;
+var collection_8 = 
+    ee.ImageCollection('MODIS/061/MOD09GQ')
+    .filter(ee.Filter.calendarRange(2000,2022,'year'))
+    .filter(ee.Filter.calendarRange(8,8,'month'))
+    .filterBounds(polygon)
+    ;
+var collection_9 = 
+    ee.ImageCollection('MODIS/061/MOD09GQ')
+    .filter(ee.Filter.calendarRange(2000,2022,'year'))
+    .filter(ee.Filter.calendarRange(9,9,'month'))
+    .filterBounds(polygon)
+    ;
+var collection_10 = 
+    ee.ImageCollection('MODIS/061/MOD09GQ')
+    .filter(ee.Filter.calendarRange(2000,2022,'year'))
+    .filter(ee.Filter.calendarRange(10,10,'month'))
+    .filterBounds(polygon)
+    ;
+    
+var collection = 
+    ee.ImageCollection('MODIS/061/MOD09GQ')
+    .filter(ee.Filter.calendarRange(2000,2022,'year'))
+    .filter(ee.Filter.calendarRange(5,10,'month'))
+    .filterBounds(polygon)
+    ;
+
+// Function to calculate and add an NDVI band
+var addNDVI = function(image) {
+return image.addBands(image.normalizedDifference(['sur_refl_b02', 'sur_refl_b01']));
+};
+
+//cloud mask with 500 m
+var terra_5 = ee.ImageCollection("MODIS/006/MOD09GA")
+    .filter(ee.Filter.calendarRange(2000,2022,'year'))
+    .filter(ee.Filter.calendarRange(5,5,'month'))
+    .filterBounds(polygon)
+    ; 
+
+var terra_6 = ee.ImageCollection("MODIS/006/MOD09GA")
+    .filter(ee.Filter.calendarRange(2000,2022,'year'))
+    .filter(ee.Filter.calendarRange(6,6,'month'))
+    .filterBounds(polygon)
+    ; 
+    
+var terra_7 = ee.ImageCollection("MODIS/006/MOD09GA")
+    .filter(ee.Filter.calendarRange(2000,2022,'year'))
+    .filter(ee.Filter.calendarRange(7,7,'month'))
+    .filterBounds(polygon)
+    ;
+var terra_8 = ee.ImageCollection("MODIS/006/MOD09GA")
+    .filter(ee.Filter.calendarRange(2000,2022,'year'))
+    .filter(ee.Filter.calendarRange(8,8,'month'))
+    .filterBounds(polygon)
+    ; 
+var terra_9 = ee.ImageCollection("MODIS/006/MOD09GA")
+    .filter(ee.Filter.calendarRange(2000,2022,'year'))
+    .filter(ee.Filter.calendarRange(9,9,'month'))
+    .filterBounds(polygon)
+    ; 
+var terra_10 = ee.ImageCollection("MODIS/006/MOD09GA")
+    .filter(ee.Filter.calendarRange(2000,2022,'year'))
+    .filter(ee.Filter.calendarRange(10,10,'month'))
+    .filterBounds(polygon)
+    ; 
+var terra = ee.ImageCollection("MODIS/006/MOD09GA")
+    .filter(ee.Filter.calendarRange(2000,2022,'year'))
+    .filter(ee.Filter.calendarRange(5,10,'month'))
+    .filterBounds(polygon)
+    ; 
+    
+var collection = collection.combine(terra);
+var collection_5 = collection.combine(terra_5);    
+var collection_6 = collection.combine(terra_6);
+var collection_7 = collection.combine(terra_7);
+var collection_8 = collection.combine(terra_8);
+var collection_9 = collection.combine(terra_9);
+var collection_10 = collection.combine(terra_10);
+
+var collection = collection.map(maskClouds);
+var collection_5 = collection_5.map(maskClouds);
+var collection_6 = collection_6.map(maskClouds);
+var collection_7 = collection_7.map(maskClouds);
+var collection_8 = collection_8.map(maskClouds);
+var collection_9 = collection_9.map(maskClouds);
+var collection_10 = collection_10.map(maskClouds);
+
+
+//seperate monthly
+var collection = collection.map(addNDVI);
+var collection_5 = collection_5.map(addNDVI);
+var collection_6 = collection_6.map(addNDVI);
+var collection_7 = collection_7.map(addNDVI);
+var collection_8 = collection_8.map(addNDVI);
+var collection_9 = collection_9.map(addNDVI);
+var collection_10 = collection_10.map(addNDVI);
+
+var NDVI = collection.select(['nd']);
+var NDVI_5 = collection_5.select(['nd']);
+var NDVI_6 = collection_6.select(['nd']);
+var NDVI_7 = collection_7.select(['nd']);
+var NDVI_8 = collection_8.select(['nd']);
+var NDVI_9 = collection_9.select(['nd']);
+var NDVI_10 = collection_10.select(['nd']);
+
+//get median per month
+var NDVImed_5=NDVI_5.median().rename('NDVI_5').set("system:id", "t5").toFloat();
+var NDVImed_6=NDVI_6.median().rename('NDVI_6').set("system:id", "t6").toFloat();
+var NDVImed_7=NDVI_7.median().rename('NDVI_7').set("system:id", "t7").toFloat();
+var NDVImed_8=NDVI_8.median().rename('NDVI_8').set("system:id", "t8").toFloat();
+var NDVImed_9=NDVI_9.median().rename('NDVI_9').set("system:id", "t9").toFloat();
+var NDVImed_10=NDVI_10.median().rename('NDVI_10').set("system:id", "t10").toFloat();
+var NDVImed=NDVI.median().rename('NDVI_5_10').set("system:id", "t5_t10").toFloat();
+
+//combine bands
+var NDVImed = NDVImed.addBands([NDVImed_5, NDVImed_6,NDVImed_7, NDVImed_8, NDVImed_9, NDVImed_10]);
+
+
+//get min - max
+var NDVImax = NDVImed.reduce(ee.Reducer.max());
+var NDVImin = NDVImed.reduce(ee.Reducer.min());
+
+var NDVI_min_max = NDVImax.subtract(NDVImin);
+
+//get which month had max NDVI
+//create constants equal to the month as a band for the image collection
+var month_5=ee.Image.constant(5).toFloat();
+var month_6=ee.Image.constant(6).toFloat();
+var month_7=ee.Image.constant(7).toFloat();
+var month_8=ee.Image.constant(8).toFloat();
+var month_9=ee.Image.constant(9).toFloat();
+var month_10=ee.Image.constant(10).toFloat();
+
+var NDVImed_5_month=NDVImed_5.addBands(month_5).rename(['NDVI', 'month']);
+var NDVImed_6_month=NDVImed_6.addBands(month_6).rename(['NDVI', 'month']);
+var NDVImed_7_month=NDVImed_7.addBands(month_7).rename(['NDVI', 'month']);
+var NDVImed_8_month=NDVImed_8.addBands(month_8).rename(['NDVI', 'month']);
+var NDVImed_9_month=NDVImed_9.addBands(month_9).rename(['NDVI', 'month']);
+var NDVImed_10_month=NDVImed_10.addBands(month_10).rename(['NDVI', 'month']);
+
+
+var all_months = ee.ImageCollection([NDVImed_5_month, NDVImed_6_month, NDVImed_7_month, NDVImed_8_month, NDVImed_9_month, NDVImed_10_month]);
+
+var max_month = all_months.reduce(ee.Reducer.max(2)).rename('max', 'max_t_step').select(['max_t_step']);
+
+var max_month = max_month.toFloat();
+
+//Add calculated bands
+var NDVImed = NDVImed.addBands(NDVI_min_max);
+
+//add standard deviation of NDVI
+var NDVI_sd = NDVI.reduce(ee.Reducer.stdDev()).rename('NDVI_sd').toFloat();
+var NDVImed = NDVImed.addBands(NDVI_sd);
+
+var NDVImed = NDVImed.addBands(max_month);
+
+
+// Create palettes for display of NDVI
+var ndvi_pal = ['#d73027', '#f46d43', '#fdae61', '#fee08b', '#d9ef8b',
+'#a6d96a'];
+
+// Display NDVI results on map
+Map.addLayer(NDVI_min_max.clip(polygon), {min:0, max:0.5, palette: ndvi_pal}, 'NDVI Max - Min');
+Map.addLayer(NDVI_sd.clip(polygon), {min:0, max:0.3, palette: ndvi_pal}, 'NDVI SD');
+Map.addLayer(max_month.clip(polygon), {min:5, max:10, palette: ndvi_pal}, 'Max Month');
+
+// Export the image, specifying scale and region.
+Export.image.toDrive({
+image: NDVImed, //replace with your image name variable
+description: 'sk_MODIS_ndvi_median',
+scale: 250,
+maxPixels: 1e12,
+region: polygon, //polygon name that you have drawn at step 1
+folder:'sk_MODIS_ndvi_median',
+crs: "EPSG:26913"
+});
