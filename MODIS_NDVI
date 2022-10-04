@@ -33,7 +33,6 @@ return image.addBands(image.normalizedDifference(['sur_refl_b02', 'sur_refl_b01'
 //cloud mask with 500 m
 var terra = ee.ImageCollection("MODIS/006/MOD09GA")
     .filter(ee.Filter.calendarRange(2000,2022,'year'))
-    .filter(ee.Filter.calendarRange(5,10,'month'))
     .filterBounds(polygon)
     ; 
     
@@ -54,7 +53,7 @@ var NDVImed_7=NDVI.filter(ee.Filter.calendarRange(7,7,'month')).median().rename(
 var NDVImed_8=NDVI.filter(ee.Filter.calendarRange(8,8,'month')).median().rename('NDVI_8').set("system:id", "t8").toFloat();
 var NDVImed_9=NDVI.filter(ee.Filter.calendarRange(9,9,'month')).median().rename('NDVI_9').set("system:id", "t9").toFloat();
 var NDVImed_10=NDVI.filter(ee.Filter.calendarRange(10,10,'month')).median().rename('NDVI_10').set("system:id", "t10").toFloat();
-var NDVImed=NDVI.median().rename('NDVI_5_10').set("system:id", "t5_t10").toFloat();
+var NDVImed=collection.filter(ee.Filter.calendarRange(5,10,'month')).select(['nd']).median().rename('NDVI_10').set("system:id", "t10").toFloat();
 
 //combine bands
 var NDVImed = NDVImed.addBands([NDVImed_5, NDVImed_6,NDVImed_7, NDVImed_8, NDVImed_9, NDVImed_10]);
