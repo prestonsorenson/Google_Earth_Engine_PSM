@@ -65,7 +65,7 @@ var NDVImed = NDVImed.addBands([NDVImed_5, NDVImed_6,NDVImed_7, NDVImed_8, NDVIm
 var NDVImax = NDVImed.reduce(ee.Reducer.max());
 var NDVImin = NDVImed.reduce(ee.Reducer.min());
 
-var NDVI_min_max = NDVImax.subtract(NDVImin);
+var NDVI_min_max = NDVImax.subtract(NDVImin).rename('Max_Min');
 
 //get which month had max NDVI
 //create constants equal to the month as a band for the image collection
@@ -91,11 +91,11 @@ var max_month = all_months.reduce(ee.Reducer.max(2)).rename('max', 'max_t_step')
 var max_month = max_month.toFloat();
 
 //Add calculated bands
-var NDVImed = NDVImed.addBands(NDVI_min_max).rename('Max_Min');
+var NDVImed = NDVImed.addBands(NDVI_min_max);
 
 //add standard deviation of NDVI
-var NDVI_sd = collection.filter(ee.Filter.calendarRange(5,10,'month')).select(['nd']).reduce(ee.Reducer.stdDev()).rename('NDVI_sd').toFloat();
-var NDVImed = NDVImed.addBands(NDVI_sd);
+//var NDVI_sd = collection.filter(ee.Filter.calendarRange(5,10,'month')).select(['nd']).reduce(ee.Reducer.stdDev()).rename('NDVI_sd').toFloat();
+//var NDVImed = NDVImed.addBands(NDVI_sd);
 
 var NDVImed = NDVImed.addBands(max_month);
 
@@ -106,7 +106,7 @@ var ndvi_pal = ['#d73027', '#f46d43', '#fdae61', '#fee08b', '#d9ef8b',
 
 // Display NDVI results on map
 Map.addLayer(NDVI_min_max.clip(polygon), {min:0, max:0.5, palette: ndvi_pal}, 'NDVI Max - Min');
-Map.addLayer(NDVI_sd.clip(polygon), {min:0, max:0.3, palette: ndvi_pal}, 'NDVI SD');
+//Map.addLayer(NDVI_sd.clip(polygon), {min:0, max:0.3, palette: ndvi_pal}, 'NDVI SD');
 Map.addLayer(max_month.clip(polygon), {min:5, max:10, palette: ndvi_pal}, 'Max Month');
 
 // Export the image, specifying scale and region.
