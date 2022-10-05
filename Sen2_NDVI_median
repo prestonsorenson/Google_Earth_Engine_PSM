@@ -101,7 +101,7 @@ var max_month = max_month.toFloat();
 var NDVImed = NDVImed.addBands(NDVI_min_max).rename('Max_Min');
 
 //add standard deviation of NDVI
-var NDVI_sd = NDVI.reduce(ee.Reducer.stdDev()).rename('NDVI_sd').toFloat();
+var NDVI_sd = collection.filter(ee.Filter.calendarRange(5,10,'month')).select(['nd']).reduce(ee.Reducer.stdDev()).rename('NDVI_sd').toFloat();
 var NDVImed = NDVImed.addBands(NDVI_sd);
 
 var NDVImed = NDVImed.addBands(max_month);
