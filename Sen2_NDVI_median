@@ -100,7 +100,7 @@ var max_month = all_months.reduce(ee.Reducer.max(2)).rename('max', 'max_t_step')
 var max_month = max_month.toFloat();
 
 //Add calculated bands
-var NDVImed = NDVImed.addBands(NDVI_min_max);
+var NDVImed = NDVImed.addBands(NDVI_min_max).rename('Max_Min');
 
 //add standard deviation of NDVI
 var NDVI_sd = NDVI.reduce(ee.Reducer.stdDev()).rename('NDVI_sd').toFloat();
