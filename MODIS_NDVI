@@ -62,7 +62,7 @@ var NDVImed = NDVImed.addBands([NDVImed_5, NDVImed_6,NDVImed_7, NDVImed_8, NDVIm
 var NDVImax = NDVImed.reduce(ee.Reducer.max());
 var NDVImin = NDVImed.reduce(ee.Reducer.min());
 
-var NDVI_min_max = NDVImax.subtract(NDVImin);
+var NDVI_min_max = NDVImax.subtract(NDVImin).rename('Max_Min');
 
 //get which month had max NDVI
 //create constants equal to the month as a band for the image collection
