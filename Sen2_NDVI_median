@@ -30,20 +30,13 @@ function maskS2clouds(image) {
   var mask = qa.bitwiseAnd(cloudBitMask).eq(0)
       .and(qa.bitwiseAnd(cirrusBitMask).eq(0));
 
-  return image.updateMask(mask).divide(10000);
-}
-
-var fill = function(image){
-                var filled1a = image.focal_mean(2, 'square', 'pixels', 1).blend(image);
-                return filled1a.set('system:time_start',image.get('system:time_start'));
-};
-
+  return image.updateMask(mask).divide(10000)
+    .copyProperties(image, image.propertyNames())}
 
 // Create a Sentinel 2 composite for Spring of 2019, and filter by
 // the bounds of the FeatureCollection.   
 var collection = 
     ee.ImageCollection('COPERNICUS/S2_SR')
-    .filter(ee.Filter.calendarRange(2017,2022,'year'))
     .filterBounds(polygon)
     .map(maskS2clouds)
     ;
