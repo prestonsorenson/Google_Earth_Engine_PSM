@@ -8,7 +8,7 @@
 
 // Filter to only include images within a defined area.
 var polygon = ee.Geometry.Polygon({
-  coords: [[[-110.00, 49.00], [-110.00, 55.00], [-101.00, 55.00], [-111.00, 49.00]
+  coords: [[[-110.00, 49.00], [-110.00, 55.00], [-101.00, 55.00], [-101.00, 49.00]
   ]],
   geodesic: false
 });
