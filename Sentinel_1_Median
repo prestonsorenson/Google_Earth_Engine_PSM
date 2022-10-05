@@ -9,7 +9,7 @@
 
 // Filter to only include images within a defined area.
 var polygon = ee.Geometry.Polygon({
-  coords: [[[-102.00, 49.00], [-102.00, 50.00], [-101.00, 50.00], [-101.00, 49.00]
+  coords: [[[-101.00, 49.00], [-111.00, 55.00], [-111.00, 55.00], [-111.00, 49.00]
   ]],
   geodesic: false
 });
@@ -155,8 +155,8 @@ var maskAng4 = function(image) {
 // the bounds of the FeatureCollection.
 var collection = 
     ee.ImageCollection('COPERNICUS/S1_GRD')
-    .filter(ee.Filter.calendarRange(2015,2020,'year'))
-    .filter(ee.Filter.calendarRange(5,5,'month'))
+    .filter(ee.Filter.calendarRange(2015,2022,'year'))
+    .filter(ee.Filter.calendarRange(5,10,'month'))
     .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV'))
     .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VH'))
     .filter(ee.Filter.eq('resolution', 'H'))
@@ -254,10 +254,10 @@ Map.addLayer(median, {min:-1, max:1}, 'NDPOL');
 // Export the image, specifying scale and region.
 Export.image.toDrive({
 image: median, //replace with your image name variable
-description: 'sk_sen1_mosaic_250m',
-scale: 250,
+description: 'sk_sen1_mosaic_10m',
+scale: 10,
 maxPixels: 1e12,
 region: polygon, //polygon name that you have drawn at step 1
-folder:'sk_sen1_mosaic_250m',
+folder:'sk_sen1_mosaic_10m',
 crs: "EPSG:26913"
 });
