@@ -50,7 +50,7 @@ var collection =
     
 // Function to calculate and add an NDVI band
 var addNDVI = function(image) {
-return image.addBands(image.normalizedDifference(['B4', 'B3']));
+return image.addBands(image.normalizedDifference(['B8', 'B4']));
 };
 
 //seperate monthly
