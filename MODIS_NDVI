@@ -43,8 +43,6 @@ var collection = collection.map(maskClouds);
 //seperate monthly
 var collection = collection.map(addNDVI);
 
-var NDVI = collection.select(['nd']);
-
 //get median per month
 var NDVImed_5=collection.filter(ee.Filter.calendarRange(5,5,'month')).select(['nd']).median().rename('NDVI_5').set("system:id", "t5").toFloat();
 var NDVImed_6=collection.filter(ee.Filter.calendarRange(6,6,'month')).select(['nd']).median().rename('NDVI_6').set("system:id", "t6").toFloat();
