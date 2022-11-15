@@ -35,8 +35,7 @@ function maskS2clouds(image) {
 
 //fetch sentinel data
 var collection = 
-    ee.ImageCollection('COPERNICUS/S2')
-    .filter(ee.Filter.calendarRange(2015,2020,'year'))
+    ee.ImageCollection('COPERNICUS/S2_SR')
     .filter(ee.Filter.calendarRange(5,10,'month'))
     .filterBounds(polygon)
     .filter(ee.Filter.lt('CLOUDY_PIXEL_PERCENTAGE', 20))
