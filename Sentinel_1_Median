@@ -151,7 +151,7 @@ var maskAng4 = function(image) {
 
  
 
-// Create a Sentinel 1 composite for Spring of 2019, and filter by
+// Create a Sentinel 1 composite, and filter by
 // the bounds of the FeatureCollection.
 var collection = 
     ee.ImageCollection('COPERNICUS/S1_GRD')
