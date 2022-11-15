@@ -33,7 +33,7 @@ function maskS2clouds(image) {
   return image.updateMask(mask).divide(10000);
 }
 
-// Create a Sentinel 2 composite for Spring of 2019, and filter by
+// Create a Sentinel 2, and filter by
 // the bounds of the FeatureCollection.
 var collection = 
     ee.ImageCollection('COPERNICUS/S2')
