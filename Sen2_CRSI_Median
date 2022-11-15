@@ -38,8 +38,7 @@ function maskS2clouds(image) {
 // Create a Sentinel 2 composite, and filter by
 // the bounds of the FeatureCollection.
 var collection = 
-    ee.ImageCollection('COPERNICUS/S2')
-    .filter(ee.Filter.calendarRange(2015,2020,'year'))
+    ee.ImageCollection('COPERNICUS/S2_SR')
     .filter(ee.Filter.calendarRange(5,10,'month'))
     .filterBounds(polygon)
     .map(maskS2clouds);
