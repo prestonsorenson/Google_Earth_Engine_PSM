@@ -1,7 +1,4 @@
 //Get average monthly values for mean_t, max_t, min_t, precip, dewpoint
-//Hogg, E.H., Barr, A.G., Black, T.A., 2013. A simple soil moisture index for representing multi-year drought impacts on aspen productivity in the western Canadian interior. Agric. For. Meteorol. 178–179, 173–182. https://doi.org/10.1016/j.agrformet.2013.04.025
-//not finished still figuring out k value calculation step
-//need to add conversion from T to vapour pressure for VPD
 
 //ERA5 Daily Aggregates
 // Filter to only include images within a defined area.
