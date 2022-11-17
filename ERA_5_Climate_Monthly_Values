@@ -34,7 +34,7 @@ var mean_tmed_8=era5.filter(ee.Filter.calendarRange(8,8,'month')).select(['mean_
 var mean_tmed_9=era5.filter(ee.Filter.calendarRange(9,9,'month')).select(['mean_t']).median().rename('mean_t_9').set("system:id", "t9").toFloat();
 var mean_tmed_10=era5.filter(ee.Filter.calendarRange(10,10,'month')).select(['mean_t']).median().rename('mean_t_10').set("system:id", "t10").toFloat();
 var mean_tmed_11=era5.filter(ee.Filter.calendarRange(11,11,'month')).select(['mean_t']).median().rename('mean_t_11').set("system:id", "t11").toFloat();
-var mean_tmed_12=mean_t.filter(ee.Filter.calendarRange(12,12,'month')).select(['mean_t']).median().rename('mean_t_12').set("system:id", "t12").toFloat();
+var mean_tmed_12=era5.filter(ee.Filter.calendarRange(12,12,'month')).select(['mean_t']).median().rename('mean_t_12').set("system:id", "t12").toFloat();
 
 //combine bands
 var mean_tmed = mean_tmed_1.addBands([mean_tmed_2,mean_tmed_3,mean_tmed_4,mean_tmed_5, mean_tmed_6,mean_tmed_7, mean_tmed_8, mean_tmed_9, mean_tmed_10, mean_tmed_11, mean_tmed_12]);
@@ -51,7 +51,7 @@ var min_tmed_8=era5.filter(ee.Filter.calendarRange(8,8,'month')).select(['min_t'
 var min_tmed_9=era5.filter(ee.Filter.calendarRange(9,9,'month')).select(['min_t']).median().rename('min_t_9').set("system:id", "t9").toFloat();
 var min_tmed_10=era5.filter(ee.Filter.calendarRange(10,10,'month')).select(['min_t']).median().rename('min_t_10').set("system:id", "t10").toFloat();
 var min_tmed_11=era5.filter(ee.Filter.calendarRange(11,11,'month')).select(['min_t']).median().rename('min_t_11').set("system:id", "t11").toFloat();
-var min_tmed_12=min_t.filter(ee.Filter.calendarRange(12,12,'month')).select(['min_t']).median().rename('min_t_12').set("system:id", "t12").toFloat();
+var min_tmed_12=era5.filter(ee.Filter.calendarRange(12,12,'month')).select(['min_t']).median().rename('min_t_12').set("system:id", "t12").toFloat();
 
 //combine bands
 var min_tmed = min_tmed_1.addBands([min_tmed_2,min_tmed_3,min_tmed_4,min_tmed_5, min_tmed_6,min_tmed_7, min_tmed_8, min_tmed_9, min_tmed_10, min_tmed_11, min_tmed_12]);
@@ -69,7 +69,7 @@ var max_tmed_8=era5.filter(ee.Filter.calendarRange(8,8,'month')).select(['max_t'
 var max_tmed_9=era5.filter(ee.Filter.calendarRange(9,9,'month')).select(['max_t']).median().rename('max_t_9').set("system:id", "t9").toFloat();
 var max_tmed_10=era5.filter(ee.Filter.calendarRange(10,10,'month')).select(['max_t']).median().rename('max_t_10').set("system:id", "t10").toFloat();
 var max_tmed_11=era5.filter(ee.Filter.calendarRange(11,11,'month')).select(['max_t']).median().rename('max_t_11').set("system:id", "t11").toFloat();
-var max_tmed_12=max_t.filter(ee.Filter.calendarRange(12,12,'month')).select(['max_t']).median().rename('max_t_12').set("system:id", "t12").toFloat();
+var max_tmed_12=era5.filter(ee.Filter.calendarRange(12,12,'month')).select(['max_t']).median().rename('max_t_12').set("system:id", "t12").toFloat();
 
 //combine bands
 var max_tmed = max_tmed_1.addBands([max_tmed_2,max_tmed_3,max_tmed_4,max_tmed_5, max_tmed_6,max_tmed_7, max_tmed_8, max_tmed_9, max_tmed_10, max_tmed_11, max_tmed_12]);
@@ -87,7 +87,7 @@ var dewpointmed_8=era5.filter(ee.Filter.calendarRange(8,8,'month')).select(['dew
 var dewpointmed_9=era5.filter(ee.Filter.calendarRange(9,9,'month')).select(['dewpoint']).median().rename('dewpoint_9').set("system:id", "t9").toFloat();
 var dewpointmed_10=era5.filter(ee.Filter.calendarRange(10,10,'month')).select(['dewpoint']).median().rename('dewpoint_10').set("system:id", "t10").toFloat();
 var dewpointmed_11=era5.filter(ee.Filter.calendarRange(11,11,'month')).select(['dewpoint']).median().rename('dewpoint_11').set("system:id", "t11").toFloat();
-var dewpointmed_12=dewpoint.filter(ee.Filter.calendarRange(12,12,'month')).select(['dewpoint']).median().rename('dewpoint_12').set("system:id", "t12").toFloat();
+var dewpointmed_12=era5.filter(ee.Filter.calendarRange(12,12,'month')).select(['dewpoint']).median().rename('dewpoint_12').set("system:id", "t12").toFloat();
 
 //combine bands
 var dewpointmed = dewpointmed_1.addBands([dewpointmed_2,dewpointmed_3,dewpointmed_4,dewpointmed_5, dewpointmed_6,dewpointmed_7, dewpointmed_8, dewpointmed_9, dewpointmed_10, dewpointmed_11, dewpointmed_12]);
