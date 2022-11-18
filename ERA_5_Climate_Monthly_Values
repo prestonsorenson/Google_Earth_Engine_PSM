@@ -1,6 +1,6 @@
 //Get average monthly values for mean_t, max_t, min_t, precip, dewpoint
 
-//ERA5 Daily Aggregates
+//ERA5 Monthly Aggregates
 // Filter to only include images within a defined area.
 var polygon = ee.Geometry.Polygon({
   coords: [[[-110.00, 49.00], [-110.00, 55.00], [-101.00, 55.00], [-101.00, 49.00]
@@ -8,9 +8,9 @@ var polygon = ee.Geometry.Polygon({
   geodesic: false
 });
 
-// Daily Climate Data
-var era5 = ee.ImageCollection('ECMWF/ERA5/DAILY')
-                   .filter(ee.Filter.calendarRange(1979,2021,'year'))
+// Monthly Climate Data
+var era5 = ee.ImageCollection('ECMWF/ERA5/MONTHLY')
+                   .filter(ee.Filter.calendarRange(1979,2020,'year'))
                    .filterBounds(polygon)
                    ;
 
@@ -94,18 +94,18 @@ var dewpointmed = dewpointmed_1.addBands([dewpointmed_2,dewpointmed_3,dewpointme
 
 
 //calculate average monthly Precip
-var precipmed_1=era5.filter(ee.Filter.calendarRange(1,1,'month')).select(['precip']).sum().divide(ee.Image.constant(43)).rename('precip_1').set("system:id", "t1").toFloat();
-var precipmed_2=era5.filter(ee.Filter.calendarRange(2,2,'month')).select(['precip']).sum().divide(ee.Image.constant(43)).rename('precip_2').set("system:id", "t2").toFloat();
-var precipmed_3=era5.filter(ee.Filter.calendarRange(3,4,'month')).select(['precip']).sum().divide(ee.Image.constant(43)).rename('precip_3').set("system:id", "t3").toFloat();
-var precipmed_4=era5.filter(ee.Filter.calendarRange(4,4,'month')).select(['precip']).sum().divide(ee.Image.constant(43)).rename('precip_4').set("system:id", "t4").toFloat();
-var precipmed_5=era5.filter(ee.Filter.calendarRange(5,5,'month')).select(['precip']).sum().divide(ee.Image.constant(43)).rename('precip_5').set("system:id", "t5").toFloat();
-var precipmed_6=era5.filter(ee.Filter.calendarRange(6,6,'month')).select(['precip']).sum().divide(ee.Image.constant(43)).rename('precip_6').set("system:id", "t6").toFloat();
-var precipmed_7=era5.filter(ee.Filter.calendarRange(7,7,'month')).select(['precip']).sum().divide(ee.Image.constant(43)).rename('precip_7').set("system:id", "t7").toFloat();
-var precipmed_8=era5.filter(ee.Filter.calendarRange(8,8,'month')).select(['precip']).sum().divide(ee.Image.constant(43)).rename('precip_8').set("system:id", "t8").toFloat();
-var precipmed_9=era5.filter(ee.Filter.calendarRange(9,9,'month')).select(['precip']).sum().divide(ee.Image.constant(43)).rename('precip_9').set("system:id", "t9").toFloat();
-var precipmed_10=era5.filter(ee.Filter.calendarRange(10,10,'month')).select(['precip']).sum().divide(ee.Image.constant(43)).rename('precip_10').set("system:id", "t10").toFloat();
-var precipmed_11=era5.filter(ee.Filter.calendarRange(11,11,'month')).select(['precip']).sum().divide(ee.Image.constant(43)).rename('precip_11').set("system:id", "t11").toFloat();
-var precipmed_12=era5.filter(ee.Filter.calendarRange(12,12,'month')).select(['precip']).sum().divide(ee.Image.constant(43)).rename('precip_12').set("system:id", "t12").toFloat();
+var precipmed_1=era5.filter(ee.Filter.calendarRange(1,1,'month')).select(['precip']).median().rename('precip_1').set("system:id", "t1").toFloat();
+var precipmed_2=era5.filter(ee.Filter.calendarRange(2,2,'month')).select(['precip']).median().rename('precip_2').set("system:id", "t2").toFloat();
+var precipmed_3=era5.filter(ee.Filter.calendarRange(3,4,'month')).select(['precip']).median().rename('precip_3').set("system:id", "t3").toFloat();
+var precipmed_4=era5.filter(ee.Filter.calendarRange(4,4,'month')).select(['precip']).median().rename('precip_4').set("system:id", "t4").toFloat();
+var precipmed_5=era5.filter(ee.Filter.calendarRange(5,5,'month')).select(['precip']).median().rename('precip_5').set("system:id", "t5").toFloat();
+var precipmed_6=era5.filter(ee.Filter.calendarRange(6,6,'month')).select(['precip']).median().rename('precip_6').set("system:id", "t6").toFloat();
+var precipmed_7=era5.filter(ee.Filter.calendarRange(7,7,'month')).select(['precip']).median().rename('precip_7').set("system:id", "t7").toFloat();
+var precipmed_8=era5.filter(ee.Filter.calendarRange(8,8,'month')).select(['precip']).median().rename('precip_8').set("system:id", "t8").toFloat();
+var precipmed_9=era5.filter(ee.Filter.calendarRange(9,9,'month')).select(['precip']).median().rename('precip_9').set("system:id", "t9").toFloat();
+var precipmed_10=era5.filter(ee.Filter.calendarRange(10,10,'month')).select(['precip']).median().rename('precip_10').set("system:id", "t10").toFloat();
+var precipmed_11=era5.filter(ee.Filter.calendarRange(11,11,'month')).select(['precip']).median().rename('precip_11').set("system:id", "t11").toFloat();
+var precipmed_12=era5.filter(ee.Filter.calendarRange(12,12,'month')).select(['precip']).median().rename('precip_12').set("system:id", "t12").toFloat();
 
 //combine bands
 var precipmed = precipmed_1.addBands([precipmed_2,precipmed_3,precipmed_4,precipmed_5, precipmed_6,precipmed_7, precipmed_8, precipmed_9, precipmed_10, precipmed_11, precipmed_12]);
