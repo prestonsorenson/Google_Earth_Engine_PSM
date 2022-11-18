@@ -37,7 +37,8 @@ var max_t=era5.select(['max_t']).median().rename('max_t');
 var dewpoint=era5.select(['dewpoint']).median().rename('dewpoint');
 
 //calculate average monthly Precip
-var precip=era5.select(['precip']).sum().divide(ee.Image.constant(43)).rename('precip');
+var precip=era5.select(['precip']).sum();
+var precip = precip.divide(42).multiply(1000).rename('precip');
 
 
 //resample to 100 m pixels
