@@ -9,8 +9,8 @@ var polygon = ee.Geometry.Polygon({
 });
 
 // Daily Climate Data
-var era5 = ee.ImageCollection('ECMWF/ERA5/DAILY')
-                   .filter(ee.Filter.calendarRange(1979,2021,'year'))
+var era5 = ee.ImageCollection('ECMWF/ERA5/MONTHLY')
+                   .filter(ee.Filter.calendarRange(1979,2020,'year'))
                    .filter(ee.Filter.calendarRange(1,1,'month'))
                    .filterBounds(polygon)
                    ;
@@ -37,8 +37,7 @@ var max_t=era5.select(['max_t']).median().rename('max_t');
 var dewpoint=era5.select(['dewpoint']).median().rename('dewpoint');
 
 //calculate average monthly Precip
-var precip=era5.select(['precip']).sum();
-var precip = precip.divide(42).multiply(1000).rename('precip');
+var precip=era5.select(['precip']).median().rename('precip');
 
 
 //resample to 100 m pixels
