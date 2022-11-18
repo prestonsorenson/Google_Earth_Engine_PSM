@@ -1,0 +1,171 @@
+//Get average monthly values for mean_t, max_t, min_t, precip, dewpoint
+
+//ERA5 Daily Aggregates
+// Filter to only include images within a defined area.
+var polygon = ee.Geometry.Polygon({
+  coords: [[[-110.00, 49.00], [-110.00, 55.00], [-101.00, 55.00], [-101.00, 49.00]
+  ]],
+  geodesic: false
+});
+
+// Daily Climate Data
+var era5 = ee.ImageCollection('ECMWF/ERA5/DAILY')
+                   .filter(ee.Filter.calendarRange(1979,2021,'year'))
+                   .filterBounds(polygon)
+                   ;
+
+//rename bands
+function renameBands(image) {
+    var bands = ['mean_2m_air_temperature', 'minimum_2m_air_temperature', 'maximum_2m_air_temperature', 'dewpoint_2m_temperature', 'total_precipitation'];
+    var new_bands =  ['mean_t', 'min_t', 'max_t', 'dewpoint', 'precip'];
+    return image.select(bands).rename(new_bands);
+}
+var era5 = era5.map(renameBands);
+
+//calculate average monthly mean_t
+var mean_tmed_1=era5.filter(ee.Filter.calendarRange(1,1,'month')).select(['mean_t']).median().rename('mean_t_1').set("system:id", "t1").toFloat();
+var mean_tmed_2=era5.filter(ee.Filter.calendarRange(2,2,'month')).select(['mean_t']).median().rename('mean_t_2').set("system:id", "t2").toFloat();
+var mean_tmed_3=era5.filter(ee.Filter.calendarRange(3,4,'month')).select(['mean_t']).median().rename('mean_t_3').set("system:id", "t3").toFloat();
+var mean_tmed_4=era5.filter(ee.Filter.calendarRange(4,4,'month')).select(['mean_t']).median().rename('mean_t_4').set("system:id", "t4").toFloat();
+var mean_tmed_5=era5.filter(ee.Filter.calendarRange(5,5,'month')).select(['mean_t']).median().rename('mean_t_5').set("system:id", "t5").toFloat();
+var mean_tmed_6=era5.filter(ee.Filter.calendarRange(6,6,'month')).select(['mean_t']).median().rename('mean_t_6').set("system:id", "t6").toFloat();
+var mean_tmed_7=era5.filter(ee.Filter.calendarRange(7,7,'month')).select(['mean_t']).median().rename('mean_t_7').set("system:id", "t7").toFloat();
+var mean_tmed_8=era5.filter(ee.Filter.calendarRange(8,8,'month')).select(['mean_t']).median().rename('mean_t_8').set("system:id", "t8").toFloat();
+var mean_tmed_9=era5.filter(ee.Filter.calendarRange(9,9,'month')).select(['mean_t']).median().rename('mean_t_9').set("system:id", "t9").toFloat();
+var mean_tmed_10=era5.filter(ee.Filter.calendarRange(10,10,'month')).select(['mean_t']).median().rename('mean_t_10').set("system:id", "t10").toFloat();
+var mean_tmed_11=era5.filter(ee.Filter.calendarRange(11,11,'month')).select(['mean_t']).median().rename('mean_t_11').set("system:id", "t11").toFloat();
+var mean_tmed_12=era5.filter(ee.Filter.calendarRange(12,12,'month')).select(['mean_t']).median().rename('mean_t_12').set("system:id", "t12").toFloat();
+
+//combine bands
+var mean_tmed = mean_tmed_1.addBands([mean_tmed_2,mean_tmed_3,mean_tmed_4,mean_tmed_5, mean_tmed_6,mean_tmed_7, mean_tmed_8, mean_tmed_9, mean_tmed_10, mean_tmed_11, mean_tmed_12]);
+
+//calculate average monthly min_t
+var min_tmed_1=era5.filter(ee.Filter.calendarRange(1,1,'month')).select(['min_t']).median().rename('min_t_1').set("system:id", "t1").toFloat();
+var min_tmed_2=era5.filter(ee.Filter.calendarRange(2,2,'month')).select(['min_t']).median().rename('min_t_2').set("system:id", "t2").toFloat();
+var min_tmed_3=era5.filter(ee.Filter.calendarRange(3,4,'month')).select(['min_t']).median().rename('min_t_3').set("system:id", "t3").toFloat();
+var min_tmed_4=era5.filter(ee.Filter.calendarRange(4,4,'month')).select(['min_t']).median().rename('min_t_4').set("system:id", "t4").toFloat();
+var min_tmed_5=era5.filter(ee.Filter.calendarRange(5,5,'month')).select(['min_t']).median().rename('min_t_5').set("system:id", "t5").toFloat();
+var min_tmed_6=era5.filter(ee.Filter.calendarRange(6,6,'month')).select(['min_t']).median().rename('min_t_6').set("system:id", "t6").toFloat();
+var min_tmed_7=era5.filter(ee.Filter.calendarRange(7,7,'month')).select(['min_t']).median().rename('min_t_7').set("system:id", "t7").toFloat();
+var min_tmed_8=era5.filter(ee.Filter.calendarRange(8,8,'month')).select(['min_t']).median().rename('min_t_8').set("system:id", "t8").toFloat();
+var min_tmed_9=era5.filter(ee.Filter.calendarRange(9,9,'month')).select(['min_t']).median().rename('min_t_9').set("system:id", "t9").toFloat();
+var min_tmed_10=era5.filter(ee.Filter.calendarRange(10,10,'month')).select(['min_t']).median().rename('min_t_10').set("system:id", "t10").toFloat();
+var min_tmed_11=era5.filter(ee.Filter.calendarRange(11,11,'month')).select(['min_t']).median().rename('min_t_11').set("system:id", "t11").toFloat();
+var min_tmed_12=era5.filter(ee.Filter.calendarRange(12,12,'month')).select(['min_t']).median().rename('min_t_12').set("system:id", "t12").toFloat();
+
+//combine bands
+var min_tmed = min_tmed_1.addBands([min_tmed_2,min_tmed_3,min_tmed_4,min_tmed_5, min_tmed_6,min_tmed_7, min_tmed_8, min_tmed_9, min_tmed_10, min_tmed_11, min_tmed_12]);
+
+
+//calculate average monthly max_t
+var max_tmed_1=era5.filter(ee.Filter.calendarRange(1,1,'month')).select(['max_t']).median().rename('max_t_1').set("system:id", "t1").toFloat();
+var max_tmed_2=era5.filter(ee.Filter.calendarRange(2,2,'month')).select(['max_t']).median().rename('max_t_2').set("system:id", "t2").toFloat();
+var max_tmed_3=era5.filter(ee.Filter.calendarRange(3,4,'month')).select(['max_t']).median().rename('max_t_3').set("system:id", "t3").toFloat();
+var max_tmed_4=era5.filter(ee.Filter.calendarRange(4,4,'month')).select(['max_t']).median().rename('max_t_4').set("system:id", "t4").toFloat();
+var max_tmed_5=era5.filter(ee.Filter.calendarRange(5,5,'month')).select(['max_t']).median().rename('max_t_5').set("system:id", "t5").toFloat();
+var max_tmed_6=era5.filter(ee.Filter.calendarRange(6,6,'month')).select(['max_t']).median().rename('max_t_6').set("system:id", "t6").toFloat();
+var max_tmed_7=era5.filter(ee.Filter.calendarRange(7,7,'month')).select(['max_t']).median().rename('max_t_7').set("system:id", "t7").toFloat();
+var max_tmed_8=era5.filter(ee.Filter.calendarRange(8,8,'month')).select(['max_t']).median().rename('max_t_8').set("system:id", "t8").toFloat();
+var max_tmed_9=era5.filter(ee.Filter.calendarRange(9,9,'month')).select(['max_t']).median().rename('max_t_9').set("system:id", "t9").toFloat();
+var max_tmed_10=era5.filter(ee.Filter.calendarRange(10,10,'month')).select(['max_t']).median().rename('max_t_10').set("system:id", "t10").toFloat();
+var max_tmed_11=era5.filter(ee.Filter.calendarRange(11,11,'month')).select(['max_t']).median().rename('max_t_11').set("system:id", "t11").toFloat();
+var max_tmed_12=era5.filter(ee.Filter.calendarRange(12,12,'month')).select(['max_t']).median().rename('max_t_12').set("system:id", "t12").toFloat();
+
+//combine bands
+var max_tmed = max_tmed_1.addBands([max_tmed_2,max_tmed_3,max_tmed_4,max_tmed_5, max_tmed_6,max_tmed_7, max_tmed_8, max_tmed_9, max_tmed_10, max_tmed_11, max_tmed_12]);
+
+
+//calculate average monthly dewpoint
+var dewpointmed_1=era5.filter(ee.Filter.calendarRange(1,1,'month')).select(['dewpoint']).median().rename('dewpoint_1').set("system:id", "t1").toFloat();
+var dewpointmed_2=era5.filter(ee.Filter.calendarRange(2,2,'month')).select(['dewpoint']).median().rename('dewpoint_2').set("system:id", "t2").toFloat();
+var dewpointmed_3=era5.filter(ee.Filter.calendarRange(3,4,'month')).select(['dewpoint']).median().rename('dewpoint_3').set("system:id", "t3").toFloat();
+var dewpointmed_4=era5.filter(ee.Filter.calendarRange(4,4,'month')).select(['dewpoint']).median().rename('dewpoint_4').set("system:id", "t4").toFloat();
+var dewpointmed_5=era5.filter(ee.Filter.calendarRange(5,5,'month')).select(['dewpoint']).median().rename('dewpoint_5').set("system:id", "t5").toFloat();
+var dewpointmed_6=era5.filter(ee.Filter.calendarRange(6,6,'month')).select(['dewpoint']).median().rename('dewpoint_6').set("system:id", "t6").toFloat();
+var dewpointmed_7=era5.filter(ee.Filter.calendarRange(7,7,'month')).select(['dewpoint']).median().rename('dewpoint_7').set("system:id", "t7").toFloat();
+var dewpointmed_8=era5.filter(ee.Filter.calendarRange(8,8,'month')).select(['dewpoint']).median().rename('dewpoint_8').set("system:id", "t8").toFloat();
+var dewpointmed_9=era5.filter(ee.Filter.calendarRange(9,9,'month')).select(['dewpoint']).median().rename('dewpoint_9').set("system:id", "t9").toFloat();
+var dewpointmed_10=era5.filter(ee.Filter.calendarRange(10,10,'month')).select(['dewpoint']).median().rename('dewpoint_10').set("system:id", "t10").toFloat();
+var dewpointmed_11=era5.filter(ee.Filter.calendarRange(11,11,'month')).select(['dewpoint']).median().rename('dewpoint_11').set("system:id", "t11").toFloat();
+var dewpointmed_12=era5.filter(ee.Filter.calendarRange(12,12,'month')).select(['dewpoint']).median().rename('dewpoint_12').set("system:id", "t12").toFloat();
+
+//combine bands
+var dewpointmed = dewpointmed_1.addBands([dewpointmed_2,dewpointmed_3,dewpointmed_4,dewpointmed_5, dewpointmed_6,dewpointmed_7, dewpointmed_8, dewpointmed_9, dewpointmed_10, dewpointmed_11, dewpointmed_12]);
+
+
+//calculate average monthly Precip
+var precipmed_1=era5.filter(ee.Filter.calendarRange(1,1,'month')).select(['precip']).sum().divide(ee.Image.constant(43)).rename('precip_1').set("system:id", "t1").toFloat();
+var precipmed_2=era5.filter(ee.Filter.calendarRange(2,2,'month')).select(['precip']).sum().divide(ee.Image.constant(43)).rename('precip_2').set("system:id", "t2").toFloat();
+var precipmed_3=era5.filter(ee.Filter.calendarRange(3,4,'month')).select(['precip']).sum().divide(ee.Image.constant(43)).rename('precip_3').set("system:id", "t3").toFloat();
+var precipmed_4=era5.filter(ee.Filter.calendarRange(4,4,'month')).select(['precip']).sum().divide(ee.Image.constant(43)).rename('precip_4').set("system:id", "t4").toFloat();
+var precipmed_5=era5.filter(ee.Filter.calendarRange(5,5,'month')).select(['precip']).sum().divide(ee.Image.constant(43)).rename('precip_5').set("system:id", "t5").toFloat();
+var precipmed_6=era5.filter(ee.Filter.calendarRange(6,6,'month')).select(['precip']).sum().divide(ee.Image.constant(43)).rename('precip_6').set("system:id", "t6").toFloat();
+var precipmed_7=era5.filter(ee.Filter.calendarRange(7,7,'month')).select(['precip']).sum().divide(ee.Image.constant(43)).rename('precip_7').set("system:id", "t7").toFloat();
+var precipmed_8=era5.filter(ee.Filter.calendarRange(8,8,'month')).select(['precip']).sum().divide(ee.Image.constant(43)).rename('precip_8').set("system:id", "t8").toFloat();
+var precipmed_9=era5.filter(ee.Filter.calendarRange(9,9,'month')).select(['precip']).sum().divide(ee.Image.constant(43)).rename('precip_9').set("system:id", "t9").toFloat();
+var precipmed_10=era5.filter(ee.Filter.calendarRange(10,10,'month')).select(['precip']).sum().divide(ee.Image.constant(43)).rename('precip_10').set("system:id", "t10").toFloat();
+var precipmed_11=era5.filter(ee.Filter.calendarRange(11,11,'month')).select(['precip']).sum().divide(ee.Image.constant(43)).rename('precip_11').set("system:id", "t11").toFloat();
+var precipmed_12=era5.filter(ee.Filter.calendarRange(12,12,'month')).select(['precip']).sum().divide(ee.Image.constant(43)).rename('precip_12').set("system:id", "t12").toFloat();
+
+//combine bands
+var precipmed = precipmed_1.addBands([precipmed_2,precipmed_3,precipmed_4,precipmed_5, precipmed_6,precipmed_7, precipmed_8, precipmed_9, precipmed_10, precipmed_11, precipmed_12]);
+
+
+//resample to 100 m pixels
+var mean_tmed = mean_tmed.resample('bicubic').reproject({crs:"EPSG:26913", scale:100});
+var min_tmed = min_tmed.resample('bicubic').reproject({crs:"EPSG:26913", scale:100});
+var max_tmed = max_tmed.resample('bicubic').reproject({crs:"EPSG:26913", scale:100});
+var dewpointmed = dewpointmed.resample('bicubic').reproject({crs:"EPSG:26913", scale:100});
+var precipmed = precipmed.resample('bicubic').reproject({crs:"EPSG:26913", scale:100});
+
+
+// Export the image, specifying scale and region.
+Export.image.toDrive({
+image: mean_tmed, //replace with your image name variable
+description: 'sk_mean_t_monthly_median_100m',
+scale: 100,
+maxPixels: 1e12,
+region: polygon, //polygon name that you have drawn at step 1
+folder: 'sk_mean_t_monthly_median_100m',
+crs: "EPSG:26913"
+});
+
+Export.image.toDrive({
+image: min_tmed, //replace with your image name variable
+description: 'sk_min_t_monthly_median_100m',
+scale: 100,
+maxPixels: 1e12,
+region: polygon, //polygon name that you have drawn at step 1
+folder: 'sk_min_t_monthly_median_100m',
+crs: "EPSG:26913"
+});
+
+Export.image.toDrive({
+image: max_tmed, //replace with your image name variable
+description: 'sk_max_t_monthly_median_100m',
+scale: 100,
+maxPixels: 1e12,
+region: polygon, //polygon name that you have drawn at step 1
+folder: 'sk_max_t_monthly_median_100m',
+crs: "EPSG:26913"
+});
+
+Export.image.toDrive({
+image: dewpointmed, //replace with your image name variable
+description: 'sk_dewpoint_monthly_median_100m',
+scale: 100,
+maxPixels: 1e12,
+region: polygon, //polygon name that you have drawn at step 1
+folder: 'sk_dewpoint_monthly_median_100m',
+crs: "EPSG:26913"
+});
+
+Export.image.toDrive({
+image: precipmed, //replace with your image name variable
+description: 'sk_precip_monthly_median_100m',
+scale: 100,
+maxPixels: 1e12,
+region: polygon, //polygon name that you have drawn at step 1
+folder: 'sk_precip_monthly_median_100m',
+crs: "EPSG:26913"
+});
