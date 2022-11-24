@@ -1,0 +1,38 @@
+//Get average monthly values for mean_t, max_t, min_t, precip, dewpoint
+
+//ERA5 Daily Aggregates
+// Filter to only include images within a defined area.
+var polygon = ee.Geometry.Polygon({
+  coords: [[[-110.00, 49.00], [-110.00, 55.00], [-101.00, 55.00], [-101.00, 49.00]
+  ]],
+  geodesic: false
+});
+
+// Daily Climate Data
+var modis = ee.ImageCollection("MODIS/NTSG/MOD16A2/105")
+                   .filterBounds(polygon)
+                   .filter(ee.Filter.calendarRange(7,7,'month'))
+                   ;
+
+//select potential evapotransiration
+var pet=modis.select(['PET']);
+
+var pet=pet.sum();
+
+var pet = pet.divide(ee.Image.constant(22));
+
+
+//resample to 100 m pixels
+var pet = pet.resample('bicubic').reproject({crs:"EPSG:26913", scale:100});
+
+
+// Export the image, specifying scale and region.
+Export.image.toDrive({
+image: pet, //replace with your image name variable
+description: 'sk_pet_monthly_median_7_100m',
+scale: 100,
+maxPixels: 1e12,
+region: polygon, //polygon name that you have drawn at step 1
+folder: 'sk_pet_monthly_median_7_100m',
+crs: "EPSG:26913"
+});
