@@ -1,0 +1,112 @@
+//import quarter sections
+var qrts = ee.FeatureCollection("users/ptsorens/SK_QRTS_South_4326");
+
+// Get average values per polygon
+
+// Filter an image collection by date and region to make a
+// median pixel composite.
+//
+// See also: ClippedComposite, which crops the output image
+// instead of filtering the input collection.
+
+// Filter to only include images within a defined area.
+var polygon = ee.Geometry.Polygon({
+  coords: [[[-110.00, 49.00], [-110.00, 55.00], [-101.00, 55.00], [-101.00, 49.00]
+  ]],
+  geodesic: false
+});
+
+var polygon_sub = ee.Geometry.Polygon({
+  coords: [[[-108.00, 51.00], [-108.00, 52.00], [-107.00, 52.00], [-107.00, 51.00]
+  ]],
+  geodesic: false
+});
+
+//var qrts=qrts.filterBounds(polygon_sub);
+
+//Cloud Mask
+/**
+ * Function to mask clouds based on the pixel_qa band of Landsat SR data.
+ * @param {ee.Image} image Input Landsat SR image
+ * @return {ee.Image} Cloudmasked Landsat image
+ */
+// Create a Landsat 7 composites filter by
+// the bounds of the FeatureCollection.
+var cropmask = ee.Image("projects/just-amp-296821/assets/AAFC_cropMask/AAFC_croplandMask");
+
+var crop_masking = function(image){
+  return image.updateMask(cropmask);
+};
+
+// Daily mean 2m air temperature
+var era5_min = ee.ImageCollection('ECMWF/ERA5/DAILY')
+                   .select('minimum_2m_air_temperature')
+                   .filterBounds(polygon_sub)
+                   ;
+                   
+// Daily total precipitation sums
+var era5_max = ee.ImageCollection('ECMWF/ERA5/DAILY')
+                   .select('maximum_2m_air_temperature')
+                   .filterBounds(polygon_sub)
+                   ;
+
+
+// make a list of months
+var list = ee.List.sequence(1,12);
+
+//.filter(ee.Filter.calendarRange(5,9,'month'))
+
+
+print(list);
+
+// make a composite (min temp) of the images monthly
+var temps_min = ee.ImageCollection.fromImages(list.map(function(month){
+  var filtCol = era5_min.filter(ee.Filter.calendarRange(month,month,'month'));
+  // add the median to every image
+  var meanImage = filtCol.median();
+  var meanImage_bicubic = meanImage.resample('bicubic').reproject({crs:"EPSG:26913", scale:250});
+  return ee.Image(meanImage_bicubic).set('system:time_start', ee.Date(month).millis());
+}));
+
+print(temps_min);
+
+
+// make a composite (max temp) of the images monthly
+// make a composite (min temp) of the images monthly
+var temps_max = ee.ImageCollection.fromImages(list.map(function(month){
+  var filtCol = era5_max.filter(ee.Filter.calendarRange(month,month,'month'));
+  // add the median to every image
+  var meanImage = filtCol.median();
+  var meanImage_bicubic = meanImage.resample('bicubic').reproject({crs:"EPSG:26913", scale:250});
+  return ee.Image(meanImage_bicubic).set('system:time_start', ee.Date(month).millis());
+}));
+
+print(temps_min);
+
+var temps_min = temps_min.toBands();
+var temps_max = temps_max.toBands();
+
+print(temps_min);
+print(temps_max);
+
+//export table
+// so you can export it as a table
+Export.image.toDrive({
+image: temps_min, //replace with your image name variable
+description: 'sk_min_t_monthly_median_250m',
+scale: 250,
+maxPixels: 1e12,
+region: polygon, //polygon name that you have drawn at step 1
+folder: 'sk_min_t_monthly_median_250m',
+crs: "EPSG:26913"
+});
+
+Export.image.toDrive({
+image: temps_max, //replace with your image name variable
+description: 'sk_max_t_monthly_median_250m',
+scale: 250,
+maxPixels: 1e12,
+region: polygon, //polygon name that you have drawn at step 1
+folder: 'sk_max_t_monthly_median_250m',
+crs: "EPSG:26913"
+});
