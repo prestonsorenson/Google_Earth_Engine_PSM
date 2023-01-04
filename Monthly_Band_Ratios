@@ -1,11 +1,7 @@
-//import quarter sections
-var qrts = ee.FeatureCollection("users/prestonsorenson/SK_QRTS_South_4326");
+//update to be only july
+//update so it is a moving average using multiyears
+//to many empty pixels on a year by year basis
 
-// Get average values per polygon
-
-// Filter an image collection by date and region to make a
-// median pixel composite.
-//
 // See also: ClippedComposite, which crops the output image
 // instead of filtering the input collection.
 
@@ -17,12 +13,10 @@ var polygon = ee.Geometry.Polygon({
 });
 
 var polygon_sub = ee.Geometry.Polygon({
-  coords: [[[-110.00, 49.00], [-110.00, 50], [-101.00, 50], [-101.00, 49.00]
+  coords: [[[-110.00, 49.00], [-110.00, 49.50], [-109.50, 49.50], [-109.50, 49.00]
   ]],
   geodesic: false
 });
-
-var qrts=qrts.filterBounds(polygon_sub);
 
 //Cloud Mask
 /**
@@ -45,22 +39,17 @@ var cloudMaskL457 = function(image) {
 
 //set dates
 var start = '1984-01-01';
-var endDate = ee.Date('1985-12-31');
+var endDate = ee.Date('2011-12-31');
 
 // Create a Landsat 5 composites filter by
 // the bounds of the FeatureCollection.
 var collection = 
     ee.ImageCollection('LANDSAT/LT05/C02/T1_L2')
-    .filter(ee.Filter.calendarRange(1985,2011,'year'))
+    .filter(ee.Filter.calendarRange(1984,2011,'year'))
     .filterBounds(polygon_sub)
     .map(cloudMaskL457)
     ;
     
-    
-//resample to 300 m to speed processing
-var collection = collection.map(function(image){
-  return image.reproject({crs:"EPSG:4326", scale:200})});
-
 
 // Function to calculate and add an NDVI band
 var addNDVI = function(image) {
@@ -92,6 +81,20 @@ var NDI5 = collection.select(['NDI5']);
 var NDI7 = collection.select(['NDI7']);
 var nbr = collection.select(['nbr']);
 
+
+    
+//resample to 300 m to speed processing
+var NDVI = NDVI.map(function(image){
+  return image.reproject({crs:"EPSG:26913", scale:200})});
+
+var NDI5 = NDI5.map(function(image){
+  return image.reproject({crs:"EPSG:26913", scale:200})});
+
+var NDI7 = NDI7.map(function(image){
+  return image.reproject({crs:"EPSG:26913", scale:200})});
+
+var nbr = nbr.map(function(image){
+  return image.reproject({crs:"EPSG:26913", scale:200})});
 
 //time periods
 var interval = 1;
@@ -150,6 +153,7 @@ var NDI5_multiband=NDI5_composites.toBands();
 var NDI7_multiband=NDI7_composites.toBands();
 var nbr_multiband=nbr_composites.toBands();
 
+
 //export
 Export.image.toDrive({
 image: ndvi_multiband, //replace with your image name variable
@@ -191,3 +195,6 @@ region: polygon, //polygon name that you have drawn at step 1
 folder:'nbr_med_monthly_l5_49_50',
 crs: "EPSG:26913"
 });
+
+
+
