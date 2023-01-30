@@ -36,7 +36,7 @@ function maskS2clouds(image) {
 // Create a Sentinel 2 composite , and filter by
 // the bounds of the FeatureCollection.   
 var collection = 
-    ee.ImageCollection('COPERNICUS/S2_SR')
+    ee.ImageCollection('COPERNICUS/S2_SR_HARMONIZED')
     .filterBounds(polygon)
     .map(maskS2clouds)
     ;
