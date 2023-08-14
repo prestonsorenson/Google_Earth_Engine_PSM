@@ -1,6 +1,5 @@
 // Landsat 8
 
-
 var polygon=ee.FeatureCollection("users/prestonsorenson/Alberta_Boundary_4326");
 
 //Cloud Mask
@@ -32,10 +31,10 @@ var mask_clouds_landsat8 = function(image) {
   return image.updateMask(mask);
 };
 
-// Create a Landsat 7 composites filter by
+// Create a Landsat 8 composites filter by
 // the bounds of the FeatureCollection.
 
-var collection = 
+var collection =
     ee.ImageCollection('LANDSAT/LC08/C02/T1_L2')
     .filter(ee.Filter.calendarRange(2015,2023,'year'))
     .filter(ee.Filter.calendarRange(5,10,'Month'))
@@ -43,41 +42,41 @@ var collection =
     .map(mask_clouds_landsat8)
     ;
 
-// Function to calculate and add an NDVI band
-var addNDVI = function(image) {
+// Function to calculate and add a band
+var addND = function(image) {
 return image.addBands(image.expression(
-      '((SWIR1+Red)-(NIR+Blue))/((SWIR1+Red)+(NIR+Blue))', {
-        'Blue': image.select(['SR_B2']),
-        'Green': image.select(['SR_B3']),
-        'Red': image.select(['SR_B4']),
-        'NIR' : image.select(['SR_B5']),
-        'SWIR1':image.select(['SR_B6']),
-        'SWIR2':image.select(['SR_B7'])
+      '((B3+B4+B5)/(2))', {
+        'B2': image.select(['SR_B2']),
+        'B3': image.select(['SR_B3']),
+        'B4': image.select(['SR_B4']),
+        'B5' : image.select(['SR_B5']),
+        'B6':image.select(['SR_B6']),
+        'B7':image.select(['SR_B7'])
       }
     ).rename('nd'));
 };
 
-var collection = collection.map(addNDVI);
+var collection = collection.map(addND);
 
-var NDVI = collection.select(['nd']);
-var NDVImed = NDVI.median(); //I just changed the name of this variable ;)
+var ND = collection.select(['nd']);
+var NDmed = ND.median(); //I just changed the name of this variable ;)
 
-var NDVImed= NDVImed.focal_median(10);
+var NDmed= NDmed.focal_median(10);
 
 // Create palettes for display of NDVI
-var ndvi_pal = ['#d73027', '#f46d43', '#fdae61', '#fee08b', '#d9ef8b',
+var nd_pal = ['#d73027', '#f46d43', '#fdae61', '#fee08b', '#d9ef8b',
 '#a6d96a'];
 
 // Display NDVI results on map
-Map.addLayer(NDVImed.clip(polygon), {min:0, max:0.2, palette: ndvi_pal}, 'nd');
+Map.addLayer(NDmed.clip(polygon), {min:0, max:0.2, palette: nd_pal}, 'nd');
 
 // Export the image, specifying scale and region.
 Export.image.toDrive({
-image: NDVImed, //replace with your image name variable
-description: 'ab_l8_BSI_med',
+image: NDmed, //replace with your image name variable
+description: 'ab_l8_si_IX_med',
 scale: 250,
 maxPixels: 1e12,
 region: polygon, //polygon name that you have drawn at step 1
-folder:'ab_l8_BSI_med',
+folder:'ab_l8_si_IX_med',
 crs: "EPSG:4326"
 });
