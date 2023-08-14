@@ -46,18 +46,20 @@ var collection =
 // Function to calculate and add an NDVI band
 var addNDVI = function(image) {
 return image.addBands(image.expression(
-      '((Blue*Red/Green)*(Red*NIR/Green))/((Blue-Red)/(Blue+Red))', {
+      '((SWIR1+Red)-(NIR+Blue))/((SWIR1+Red)+(NIR+Blue)', {
         'Blue': image.select(['SR_B2']),
         'Green': image.select(['SR_B3']),
         'Red': image.select(['SR_B4']),
-        'NIR' : image.select(['SR_B5'])
+        'NIR' : image.select(['SR_B5']),
+        'SWIR1':image.select(['SR_B6']),
+        'SWIR2':image.select(['SR_B7'])
       }
-    ).rename('REIP'));
+    ).rename('nd'));
 };
 
 var collection = collection.map(addNDVI);
 
-var NDVI = collection.select(['REIP']);
+var NDVI = collection.select(['nd']);
 var NDVImed = NDVI.median(); //I just changed the name of this variable ;)
 
 var NDVImed= NDVImed.focal_median(10);
@@ -67,15 +69,15 @@ var ndvi_pal = ['#d73027', '#f46d43', '#fdae61', '#fee08b', '#d9ef8b',
 '#a6d96a'];
 
 // Display NDVI results on map
-Map.addLayer(NDVImed.clip(polygon), {min:0, max:1, palette: ndvi_pal}, 'NDVI');
+Map.addLayer(NDVImed.clip(polygon), {min:0, max:0.2, palette: ndvi_pal}, 'nd');
 
 // Export the image, specifying scale and region.
 Export.image.toDrive({
 image: NDVImed, //replace with your image name variable
-description: 'ab_l8_sia_med',
+description: 'ab_l8_BSI_med',
 scale: 250,
 maxPixels: 1e12,
 region: polygon, //polygon name that you have drawn at step 1
-folder:'ab_l8_sia_med',
+folder:'ab_l8_BSI_med',
 crs: "EPSG:4326"
 });
