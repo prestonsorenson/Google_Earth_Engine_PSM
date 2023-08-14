@@ -46,7 +46,7 @@ var collection =
 // Function to calculate and add an NDVI band
 var addNDVI = function(image) {
 return image.addBands(image.expression(
-      '((SWIR1+Red)-(NIR+Blue))/((SWIR1+Red)+(NIR+Blue)', {
+      '((SWIR1+Red)-(NIR+Blue))/((SWIR1+Red)+(NIR+Blue))', {
         'Blue': image.select(['SR_B2']),
         'Green': image.select(['SR_B3']),
         'Red': image.select(['SR_B4']),
