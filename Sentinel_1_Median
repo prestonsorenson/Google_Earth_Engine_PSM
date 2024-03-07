@@ -155,11 +155,11 @@ var maskAng4 = function(image) {
 // the bounds of the FeatureCollection.
 var collection = 
     ee.ImageCollection('COPERNICUS/S1_GRD')
-    .filter(ee.Filter.calendarRange(2015,2022,'year'))
     .filter(ee.Filter.calendarRange(5,10,'month'))
     .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VV'))
     .filter(ee.Filter.listContains('transmitterReceiverPolarisation', 'VH'))
     .filter(ee.Filter.eq('resolution', 'H'))
+    .filter(ee.Filter.eq('instrumentMode', 'IW'))
     .filterBounds(polygon);
 
 // angle masking
@@ -211,8 +211,6 @@ return image.addBands(image.expression(
 
 var NDPOL_collection = VV.combine(VH);
 
-print(NDPOL_collection);
-
 var NDPOL_collection = NDPOL_collection.map(addNDPOL);
 var NDPOL = NDPOL_collection.select(['NDPOL']);
 
@@ -228,16 +226,6 @@ var VV = VV.median();
 var VH = VH.median();
 var NDPOL = NDPOL.median();
 
-var meanDictionary = NDPOL.reduceRegion({
-  reducer: ee.Reducer.mean(),
-  geometry: polygon,
-  scale: 250,
-  maxPixels: 1e9
-});
-
-print(meanDictionary);
-
-
 ///////////////////////////////////////////////////////////////////////////////
 //END
 ///////////////////////////////////////////////////////////////////////////////
@@ -247,10 +235,6 @@ var median = median.addBands(NDPOL);
 var median = median.rename(['VV', 'VH', 'NDPOL']);
 var median = median.float();
 
-print(median);
-
-Map.addLayer(median, {min:-1, max:1}, 'NDPOL');
-
 // Export the image, specifying scale and region.
 Export.image.toDrive({
 image: median, //replace with your image name variable
@@ -259,5 +243,5 @@ scale: 10,
 maxPixels: 1e12,
 region: polygon, //polygon name that you have drawn at step 1
 folder:'sk_sen1_mosaic_10m',
-crs: "EPSG:26913"
+crs: "EPSG:4326"
 });
