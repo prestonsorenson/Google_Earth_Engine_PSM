@@ -1,0 +1,81 @@
+// Sentinel-2
+
+// Filter an image collection by date and region to make a
+// median pixel composite.
+//
+// See also: ClippedComposite, which crops the output image
+// instead of filtering the input collection.
+
+// Filter to only include images within a defined area.
+
+/**
+ * Function to mask clouds using the Sentinel-2 QA band
+ * @param {ee.Image} image Sentinel-2 image
+ * @return {ee.Image} cloud masked Sentinel-2 image
+ */
+function maskS2clouds(image) {
+  var qa = image.select('QA60');
+
+  // Bits 10 and 11 are clouds and cirrus, respectively.
+  var cloudBitMask = 1 << 10;
+  var cirrusBitMask = 1 << 11;
+
+  // Both flags should be set to zero, indicating clear conditions.
+  var mask = qa.bitwiseAnd(cloudBitMask).eq(0)
+      .and(qa.bitwiseAnd(cirrusBitMask).eq(0));
+
+  return image.updateMask(mask).divide(10000);
+}
+
+// Create a Sentinel 2, and filter by
+// the bounds of the FeatureCollection.
+//var polygon = ee.FeatureCollection("users/prestonsorenson/AB_White_Zone");
+
+
+var polygon = ee.Geometry.Polygon({
+  coords: [[[-101.00, 49.0], [-101.0, 55.0], [-110.0, 55.0], [-110.0, 49.0] 
+  ]],
+  geodesic: false
+});
+
+
+var collection = 
+    ee.ImageCollection('COPERNICUS/S2_SR_HARMONIZED')
+    .filter(ee.Filter.calendarRange(5,10,'month'))
+    .filterBounds(polygon)
+    .map(maskS2clouds);
+
+// Function to calculate and add an NDVI band
+var addNDVI = function(image) {
+return image.addBands(image.normalizedDifference(['B8', 'B4']));
+};
+
+var collection = collection.map(addNDVI);
+
+var NDVI = collection.select(['nd']);
+var NDVImed = NDVI.median(); //I just changed the name of this variable ;)
+var NDVI_f = NDVImed.focalMedian(30, 'square', 'meters');
+var NDVI_f = NDVI_f.focalMedian(50, 'square', 'meters');
+var NDVI_f = NDVI_f.focalMedian(70, 'square', 'meters');
+var NDVI_f = NDVI_f.focalMedian(100, 'square', 'meters');
+var NDVImed=NDVImed.addBands(NDVI_f);
+
+var NDVI_focal_norm=NDVImed.normalizedDifference();
+
+// Create palettes for display of NDVI
+var ndvi_pal = ['#d73027', '#f46d43', '#fdae61', '#fee08b', '#d9ef8b',
+'#a6d96a'];
+
+// Display NDVI results on map
+Map.addLayer(NDVI_focal_norm.clip(polygon), {min:-1, max:0.3, palette: ndvi_pal}, 'NDVI');
+
+// Export the image, specifying scale and region.
+Export.image.toDrive({
+image: NDVI_focal_norm, //replace with your image name variable
+description: 'sk_sen2_ndvi_focal_norm_5_10',
+scale: 10,
+maxPixels: 1e12,
+region: polygon, //polygon name that you have drawn at step 1
+folder:'sk_sen2_ndvi_focal_norm_5_10',
+crs: "EPSG:4326"
+});
