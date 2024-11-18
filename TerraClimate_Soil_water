@@ -1,0 +1,30 @@
+// Filter to only include images within a defined area.
+var polygon = ee.FeatureCollection("users/prestonsorenson/AB_White_Zone");
+
+// Climate Data
+var modis = ee.ImageCollection("IDAHO_EPSCOR/TERRACLIMATE")
+                   .filterBounds(polygon)
+                   .filter(ee.Filter.calendarRange(2021,2023,'year'))
+                   .filter(ee.Filter.calendarRange(5,8,'month'))
+                   ;
+
+//select soil water
+var pet=modis.select(['soil']);
+
+var pet=pet.median();
+
+
+//resample to 250 m pixels
+var pet = pet.resample('bicubic').reproject({crs:"EPSG:26912", scale:250});
+
+
+// Export the image, specifying scale and region.
+Export.image.toDrive({
+image: pet, //replace with your image name variable
+description: 'ab_soil_water_may_aug_2021_2023_250m',
+scale: 250,
+maxPixels: 1e12,
+region: polygon, //polygon name that you have drawn at step 1
+folder: 'ab_soil_water_may_aug_2021_2023_250m',
+crs: "EPSG:4326"
+});
