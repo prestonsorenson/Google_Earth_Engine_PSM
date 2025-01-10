@@ -6,7 +6,7 @@ var polygon = ee.Geometry.Polygon({
 });
 
 var dataset = ee.ImageCollection('COPERNICUS/DEM/GLO30').filterBounds(polygon);
-var elevation = dataset.select('DEM');
+var elevation = dataset.select('DEM').median();
 Map.setCenter(-112.00, 50.5, 10);
 Map.addLayer(elevation, {min: 600, max: 700}, 'slope');
 
