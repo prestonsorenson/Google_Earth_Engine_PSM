@@ -1,0 +1,32 @@
+// Filter to only include images within a defined area.
+var polygon = ee.Geometry.Polygon({
+  coords: [[[-110.00, 49.00], [-110.00, 55.00], [-101.00, 55.00], [-101.00, 49.00]
+  ]],
+  geodesic: false
+});
+
+
+var dataset = ee.ImageCollection('COPERNICUS/DEM/GLO30').filterBounds(polygon);
+var elevation = dataset.select('DEM').median();
+
+var elevation = elevation.focal_median(3);
+var elevation = elevation.reduceNeighborhood({
+    reducer: ee.Reducer.stdDev(),
+    kernel: ee.Kernel.circle(21),
+});
+
+
+
+Map.setCenter(-112.00, 50.5, 10);
+Map.addLayer(elevation, {min: 600, max: 700}, 'slope');
+
+// Export the image, specifying scale and region.
+Export.image.toDrive({
+image: elevation, //replace with your image name variable
+description: 'sk_elevation_cop_3x3_sd21x21',
+scale: 30,
+maxPixels: 1e12,
+region: polygon, //polygon name that you have drawn at step 1
+folder:'sk_elevation_cop_3x3_sd21x21',
+crs: "EPSG:4326"
+});
